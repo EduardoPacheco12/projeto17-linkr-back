@@ -1,5 +1,5 @@
-import { signInSchema, signUpSchema } from "../schemas/authSchema.js";
-import connection from "../dbs/postgres.js";
+import { signInSchema, signUpSchema } from "../schemas/authSchemas.js";
+import { authRepository } from "../repositories/authRepository.js";
 import bcrypt from "bcrypt";
 
 export async function SignUpMiddleware(req, res, next) {
@@ -10,7 +10,7 @@ export async function SignUpMiddleware(req, res, next) {
         return res.status(422).send(error.details);
     }
 
-    const { rows: verifyEmail } = await connection.query('SELECT * FROM users WHERE email = $1',[body.email]);
+    const { rows: verifyEmail } = await authRepository.SignMiddleware(body.email);
     if(verifyEmail[0]) {
         return res.sendStatus(409);
     }
@@ -26,7 +26,7 @@ export async function SignInMiddleware(req, res, next) {
         return res.status(422).send(error.details);
     }
 
-    const { rows: verifyUser } = await connection.query('SELECT * FROM users WHERE email = $1', [body.email]);
+    const { rows: verifyUser } = await authRepository.SignMiddleware(body.email);
     const verifyPassword = bcrypt.compareSync(body.password, verifyUser[0].password);
     if(!verifyUser[0] || !verifyPassword) {
         return res.sendStatus(401);

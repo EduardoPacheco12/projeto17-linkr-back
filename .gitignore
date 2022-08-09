@@ -1,3 +1,7 @@
+.git
+.gitignore
+.vscode
+package-lock.json
 node_modules/
 .env
 .wakatime-project

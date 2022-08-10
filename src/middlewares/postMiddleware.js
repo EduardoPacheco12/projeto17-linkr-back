@@ -1,5 +1,5 @@
-import { tokenMatch } from "../handlers/tokenHandler";
-import { postSchema } from "../schemas/authSchemas";
+import { tokenMatch } from "../handlers/tokenHandler.js";
+import { postSchema } from "../schemas/authSchemas.js";
 
 export async function PostMiddleware(req, res, next) {
 

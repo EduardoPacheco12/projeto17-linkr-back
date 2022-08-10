@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { post } from "../controllers/postControllers";
-import { PostMiddleware } from "../middlewares/postMiddleware";
+import { post } from "../controllers/postControllers.js";
+import { PostMiddleware } from "../middlewares/postMiddleware.js";
 
 
 const router = Router();

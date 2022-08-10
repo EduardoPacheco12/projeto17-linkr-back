@@ -6,6 +6,6 @@ import { PostMiddleware } from "../middlewares/postMiddleware.js";
 const router = Router();
 
 router.post("/publish", PostMiddleware, post);
-router.get("/posts", getPost);
+router.get("/timeline", getPost);
 
 export default router;

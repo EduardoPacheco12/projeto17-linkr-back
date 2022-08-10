@@ -15,8 +15,7 @@ async function getMetadata(post) {
 export async function postsMetadata(lista) {
 
   for (let i = 0; i < lista.length; i++) {
-    lista[i]["meta"] = (await getMetadata(lista[i]));
-    // do stuff with metadata
+    lista[i]["metadata"] = (await getMetadata(lista[i]));
   }
   return lista
 }

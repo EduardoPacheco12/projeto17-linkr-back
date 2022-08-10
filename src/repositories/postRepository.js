@@ -1,7 +1,7 @@
 import connection from "../databases/postgres.js";
 
 async function getPosts() {
-	return connection.query('SELECT * FROM posts');
+	return connection.query('SELECT users.username, users."pictureUrl", posts.*  FROM posts JOIN users ON users.id="creatorId"');
 }
 
 async function sendPost(id, description, url) {

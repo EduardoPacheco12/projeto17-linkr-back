@@ -2,9 +2,9 @@ import connection from "../databases/postgres.js";
 
 export async function getUserByName(name) {
   return connection.query(
-    `SELECT name, "imageUrl"
+    `SELECT id, username, "pictureUrl"
     FROM users
-    WHERE name LIKE $1;`,
+    WHERE username LIKE $1;`,
     [ `${ name }%` ]
   );
 }

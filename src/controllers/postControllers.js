@@ -1,27 +1,29 @@
+import { postsMetadata } from '../handlers/postsHandler.js';
 import {postRepository} from '../repositories/postRepository.js'
 
 
 export async function post(req, res) {
-  const { link } = req.query;
-
+  const { link, description } = req.body;
+  const {id} = res.locals
   try {
-    const { rows: usersData } = await postRepository.sendPost(link);
+    await postRepository.sendPost(id, description, link);
 
-    res.status(200).send(usersData);
+    res.sendStatus(201);
   } catch(err) {
     console.log(err);
-    res.sendStatus(500);
+    res.sendStatus(401);
   }
 }
 
 
-export async function getPosts(req, res) {
-  const { name } = req.query;
+export async function getPost(req, res) {
 
   try {
-    const { rows: usersData } = await getUserByName(name);
+    const { rows: usersData } = await postRepository.getPosts();
 
-    res.status(200).send(usersData);
+
+    const item = await postsMetadata(usersData);
+    res.status(200).send(item);
   } catch(err) {
     console.log(err);
     res.sendStatus(500);

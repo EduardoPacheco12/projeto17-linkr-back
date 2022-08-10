@@ -17,13 +17,16 @@ export async function post(req, res) {
 
 
 export async function getPost(req, res) {
-
+  let a = []
   try {
     const { rows: usersData } = await postRepository.getPosts();
 
+    for (let i = 0; i < usersData.length; i++) {
+      a.push( await postsMetadata(usersData[i]));
+      
+    }
 
-    const item = await postsMetadata(usersData);
-    res.status(200).send(item);
+    res.status(200).send(a);
   } catch(err) {
     console.log(err);
     res.sendStatus(500);

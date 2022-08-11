@@ -19,14 +19,16 @@ export async function post(req, res) {
 export async function getPost(req, res) {
   let a = []
   try {
-    const { rows: usersData } = await postRepository.getPosts();
+    const { rows: usersData, rowCount } = await postRepository.getPosts();
 
-    for (let i = 0; i < usersData.length; i++) {
+    const ultimos20 = (rowCount > 20)? 20 : rowCount; 
+    for (let i = 0; i < rowCount; i++) {
+      console.log(usersData[i])
       a.push( await postsMetadata(usersData[i]));
       
     }
 
-    res.status(200).send(a);
+    res.status(200).send(a.reverse());
   } catch(err) {
     console.log(err);
     res.sendStatus(500);

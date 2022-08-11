@@ -10,7 +10,6 @@ export async function post(req, res) {
 
     res.sendStatus(201);
   } catch(err) {
-    console.log(err);
     res.sendStatus(401);
   }
 }
@@ -23,14 +22,12 @@ export async function getPost(req, res) {
 
     const ultimos20 = (rowCount > 20)? 20 : rowCount; 
     for (let i = 0; i < rowCount; i++) {
-      console.log(usersData[i])
       a.push( await postsMetadata(usersData[i]));
       
     }
 
     res.status(200).send(a.reverse());
   } catch(err) {
-    console.log(err);
     res.sendStatus(500);
   }
 }
@@ -47,7 +44,6 @@ export async function getPostUser(req, res) {
 
     res.status(200).send(userPostMetadata);
   } catch(err) {
-    console.log(err);
     res.sendStatus(500);
   }
 }

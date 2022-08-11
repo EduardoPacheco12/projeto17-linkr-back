@@ -33,6 +33,7 @@ export async function SignInMiddleware(req, res, next) {
     }
 
     res.locals.id = verifyUser[0].id
+    res.locals.pictureUrl = verifyUser[0].pictureUrl;
 
     next();
 }

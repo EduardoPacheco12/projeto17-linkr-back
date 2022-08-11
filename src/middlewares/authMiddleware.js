@@ -27,8 +27,12 @@ export async function SignInMiddleware(req, res, next) {
     }
 
     const { rows: verifyUser } = await authRepository.SignMiddleware(body.email);
+    if(!verifyUser[0]) {
+        return res.sendStatus(401);
+    }
+
     const verifyPassword = bcrypt.compareSync(body.password, verifyUser[0].password);
-    if(!verifyUser[0] || !verifyPassword) {
+    if(!verifyPassword) {
         return res.sendStatus(401);
     }
 

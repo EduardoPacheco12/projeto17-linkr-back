@@ -8,7 +8,23 @@ async function sendPost(id, description, url) {
 	return connection.query('INSERT INTO posts ("creatorId", description, url) VALUES ($1, $2, $3)',[id, description, url]);
 }
 
+async function getPostUserId(userId) {
+  return connection.query(
+    `
+    SELECT users.id, users.username, users."pictureUrl",
+    posts.id, posts.url, posts.description
+    FROM users
+    LEFT JOIN posts
+    ON users.id = posts."creatorId"
+    WHERE users.id = $1
+    GROUP BY users.id, posts.id;
+    `,
+    [ userId ]
+  );
+}
+
 export const postRepository = {
     getPosts,
-    sendPost
+    sendPost,
+    getPostUserId
 }

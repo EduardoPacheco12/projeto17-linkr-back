@@ -29,3 +29,20 @@ export async function getPost(req, res) {
     res.sendStatus(500);
   }
 }
+
+export async function getPostUser(req, res) {
+  const { userid } = req.params;
+
+  try {
+    const { rows:userData } = await postRepository.getPostUserId(userid);
+
+    if(userData.length === 0) return res.sendStatus(404);
+
+    const userPostMetadata = await postsMetadata(userData);
+
+    res.status(200).send(userPostMetadata);
+  } catch(err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+}

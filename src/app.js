@@ -5,6 +5,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
 import postRoutes from './routes/postRouter.js';
+import likeRouter from './routes/likeRouter.js';
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(authRoutes);
 app.use(contentRouter);
 app.use(usersRouter);
 app.use(postRoutes);
+app.use(likeRouter);
 
 app.listen(process.env.PORT, () => {
     console.log(`Mode: ${process.env.MODE || "DEV"}`)

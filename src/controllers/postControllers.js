@@ -2,6 +2,16 @@ import { postsMetadata } from '../handlers/postsHandler.js';
 import {postRepository} from '../repositories/postRepository.js'
 
 
+async function getMetadata(posts) {
+  const postsWithMetadata = [];
+
+  for(const post of posts) {
+    postsWithMetadata.push(await postsMetadata(post));
+  }
+
+  return postsWithMetadata;
+}
+
 export async function post(req, res) {
   const { link, description } = req.body;
   const {id} = res.locals
@@ -42,7 +52,7 @@ export async function getPostUser(req, res) {
 
     if(userData.length === 0) return res.sendStatus(404);
 
-    const userPostMetadata = await postsMetadata(userData);
+    const userPostMetadata = await getMetadata(userData);
 
     res.status(200).send(userPostMetadata);
   } catch(err) {

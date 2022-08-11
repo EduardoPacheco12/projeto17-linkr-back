@@ -11,13 +11,14 @@ async function sendPost(id, description, url) {
 async function getPostUserId(userId) {
   return connection.query(
     `
-    SELECT users.id, users.username, users."pictureUrl",
-    posts.id, posts.url, posts.description
+    SELECT users.username, users."pictureUrl",
+    posts.*
     FROM users
     LEFT JOIN posts
     ON users.id = posts."creatorId"
     WHERE users.id = $1
-    GROUP BY users.id, posts.id;
+    GROUP BY users.id, posts.id
+    ORDER BY posts.id DESC;
     `,
     [ userId ]
   );

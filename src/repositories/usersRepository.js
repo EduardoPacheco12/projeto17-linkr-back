@@ -8,3 +8,12 @@ export async function getUserByName(name) {
     [ `${ name }%` ]
   );
 }
+
+export async function returnPictureUser(id) {
+  return connection.query(
+    `SELECT "pictureUrl", username
+    FROM users
+    WHERE id=$1;`,
+    [id]
+  );
+}

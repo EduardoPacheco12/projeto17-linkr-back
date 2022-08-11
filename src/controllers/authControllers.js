@@ -16,11 +16,16 @@ export async function SignUp(req, res) {
 
 export async function SignIn(req, res) {
     const id = res.locals.id;
+    const pictureUrl = res.locals.pictureUrl;
     try {
         const token = jwt.sign({ id }, process.env.PRIVATE_KEY_JWT, {
             expiresIn: 3600 // expires in 1h
         });
-        res.status(200).send(token);
+        const info = {
+            token,
+            pictureUrl
+        }
+        res.status(200).send(info);
     } catch (error) {
         res.status(500).send(error);
     }

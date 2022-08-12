@@ -7,7 +7,7 @@ export async function redirectToHashtag(req, res) {
     res.status(200).send(response);
     return;
   } catch (err) {
-    res.status(400).send('no');
+    res.status(400).send();
     return;
   }
 }
@@ -15,11 +15,11 @@ export async function redirectToHashtag(req, res) {
 export async function createHashtag(req, res) {
   try {
     const data = 'blah';
-    const { rows: response } = await getContentData({ data })
+    // const { rows: response } = await setContentData({ data })
     res.status(200).send(response);
     return;
   } catch (err) {
-    res.status(400).send('no');
+    res.status(400).send();
     return;
   }
 }

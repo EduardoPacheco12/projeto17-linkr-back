@@ -1,6 +1,6 @@
 import getMetadados from '../handlers/postsHandler.js';
 import postsMetadata from '../handlers/postsHandler.js';
-import {postRepository} from '../repositories/postRepository.js'
+import { postRepository } from '../repositories/postRepository.js'
 
 
 async function getMetadata(posts) {
@@ -15,15 +15,16 @@ async function getMetadata(posts) {
 
 export async function post(req, res) {
   const { link, description } = req.body;
-  const {id} = res.locals
+  const { id } = res.locals
 
   console.log(res.locals)
   try {
-    await postRepository.sendPost(id, description, link); 
-
-    res.sendStatus(201);
+    const { rows: response } = await postRepository.sendPost(id, description, link); 
+    res.stauts(201).send(response[0]);
+    return;
   } catch(err) {
     res.sendStatus(401);
+    return;
   }
 }
 

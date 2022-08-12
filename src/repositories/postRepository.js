@@ -14,7 +14,14 @@ async function getPosts() {
 }
 
 async function sendPost(id, description, url) {
-	return connection.query('INSERT INTO posts ("creatorId", description, url) VALUES ($1, $2, $3)',[id, description, url]);
+  const queryString = `
+    INSERT INTO posts 
+    ("creatorId", description, url) 
+    VALUES ($1, $2, $3)
+  ;`;
+  const queryData = [id, description, url];
+
+	return connection.query(queryString, queryData);
 }
 
 async function getPostUserId(userId) {

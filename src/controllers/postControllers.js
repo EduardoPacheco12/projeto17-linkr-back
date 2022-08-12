@@ -27,7 +27,7 @@ export async function post(req, res) {
       const tIds = rows.map(i => `${i['trendings']?.replaceAll(/\D/g, "")}`)
       await setTrendRelation(response[0]?.id, tIds);
     }
-    const postInfo = { ...response[0], trendIds: tIds }
+    const postInfo = { ...response[0]}
     res.status(201).send(postInfo);
     return;
   } catch(err) {

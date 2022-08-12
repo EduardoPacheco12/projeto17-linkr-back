@@ -4,14 +4,9 @@ async function getPosts() {
 	return connection.query(
     `SELECT 
       p.id, p.url, p.description, 
-      u.username, u."pictureUrl", p."creatorId",
-      ARRAY(SELECT "trendId" FROM trends WHERE trends."postId"=p.id)
+      u.username, u."pictureUrl", p."creatorId"
       FROM posts p
       JOIN users u ON p."creatorId" = u.id
-      LEFT JOIN trends t ON p.id=t."postId"
-      GROUP BY 
-      p.id, p.url, p.description,
-      u.username, u."pictureUrl", p."creatorId"
       ORDER BY p.timestamp DESC
       LIMIT 20
     ;`

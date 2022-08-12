@@ -25,6 +25,22 @@ export async function getContentQuery({ data }) {
   return connection.query(queryString, queryData);
 }
 
+export async function getContentData(name) {
+  
+  const queryData = [name];
+  const queryString = `
+    SELECT 
+      p.id, p.url, p.description, 
+      u.username, u."pictureUrl", p."creatorId" 
+    FROM posts p 
+    JOIN users u ON p."creatorId" = u.id 
+    JOIN trends tr ON tr."postId"=p.id WHERE tr."trendId"=(SELECT id FROM trendings WHERE name=$1)
+    ORDER BY p.timestamp DESC 
+    LIMIT 20
+  ;`;
+  return connection.query(queryString, queryData)
+}
+
 export async function setTrendingQuery(queryData) {
   const dataToSqlString = queryData.map(i => (`\"${i}\"`) );
   const queryString = `
@@ -55,22 +71,22 @@ export async function setTrendRelation(userId, trendIds) {
     FROM arr, json_array_elements_text(INTEGER::json) elem
     ON CONFLICT DO NOTHING
     RETURNING trends
-  `
+  ;`;
 
   return connection.query(queryString, queryData)
 }
 
-export async function getTrendingQuery({ data }) {
-
-  const queryData = [data];
-
+export async function getTrendingQuery() {
   const queryString = `
-    SELECT ta.id, tr.name hashtag
-    JOIN trendings AS tr ON tr.id = ta.id
-    FROM tags ta
-    GROUP BY ta.id
-    LIMIT 5
+    SELECT 
+      tg.name hashtag,
+      COUNT(tr."trendId") top
+    FROM trendings tg
+    LEFT JOIN trends tr ON tr."trendId"=tg.id
+    GROUP BY hashtag
+    ORDER BY top DESC
+    LIMIT 10
   ;`;
 
-  return connection.query(queryString, queryData);
+  return connection.query(queryString);
 }

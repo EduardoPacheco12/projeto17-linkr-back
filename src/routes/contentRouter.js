@@ -1,12 +1,9 @@
 import Router from "express";
-
+import { listTopTrends, redirectToHashtag } from "../controllers/contentControllers.js";
 
 const contentRouter = Router();
 
-
-contentRouter.get('/hashtag/:id');
-contentRouter.get('/hashtag', );
-// contentRouter.post('/hashtag'); COMO INSERIR UMA NOVA # ? LENDO AS MENSAGENS?
-
+contentRouter.get('/hashtag/:id', redirectToHashtag);
+contentRouter.get('/hashtag', listTopTrends);
 
 export default contentRouter;

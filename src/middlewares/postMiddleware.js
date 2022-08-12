@@ -4,6 +4,7 @@ import { postSchema } from "../schemas/authSchemas.js";
 export async function PostMiddleware(req, res, next) {
   const token = req.headers.authorization;
   const user_id = tokenMatch(token)[1]
+  console.log(req.headers)
   console.log(tokenMatch(token))
 
   const body = req.body;
@@ -15,7 +16,6 @@ export async function PostMiddleware(req, res, next) {
   if (error) {
       return res.status(422).send(error.details);
   }
-
   res.locals.id = user_id;
   next();
 }

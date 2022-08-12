@@ -1,4 +1,5 @@
-import { postsMetadata } from '../handlers/postsHandler.js';
+import getMetadados from '../handlers/postsHandler.js';
+import postsMetadata from '../handlers/postsHandler.js';
 import {postRepository} from '../repositories/postRepository.js'
 
 
@@ -15,8 +16,10 @@ async function getMetadata(posts) {
 export async function post(req, res) {
   const { link, description } = req.body;
   const {id} = res.locals
+
+  console.log(res.locals)
   try {
-    await postRepository.sendPost(id, description, link);
+    await postRepository.sendPost(id, description, link); 
 
     res.sendStatus(201);
   } catch(err) {
@@ -26,19 +29,24 @@ export async function post(req, res) {
 
 
 export async function getPost(req, res) {
-  let a = []
+  let posts = []
   try {
-    const { rows: usersData, rowCount } = await postRepository.getPosts();
+    const { rows: allPosts } = await postRepository.getPosts();
 
-    if(rowCount === 0) return res.sendStatus(404);
+    for(let post of allPosts){
+      try{
 
-    const ultimos20 = (rowCount > 20)? 20 : rowCount; 
-
-    for (let i = 0; i < rowCount; i++) {
-      a.push( await postsMetadata(usersData[i]));
+        const metadata = await getMetadados(post.url);
+        const {title, image, description, url} = metadata;
+        posts.push({...post, metadata:{title, image, description, url}})
+      }catch (error) {
+        const metadata = { title: "", image: "", description: "" }
+        const {title, image, description, url} = metadata;
+        posts.push({...post, metadata:{title, image, description, url}})
+      }
     }
 
-    res.status(200).send(a.reverse());
+    res.status(200).send(posts);
   } catch(err) {
     res.sendStatus(500);
   }

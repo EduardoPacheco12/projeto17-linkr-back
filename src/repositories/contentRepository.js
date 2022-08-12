@@ -25,6 +25,23 @@ export async function getContentQuery({ data }) {
   return connection.query(queryString, queryData);
 }
 
+export async function getContentData(name) {
+  
+  const queryData = [name];
+  console.log(queryData);
+  const queryString = `
+    SELECT 
+      p.id, p.url, p.description, 
+      u.username, u."pictureUrl", p."creatorId" 
+    FROM posts p 
+    JOIN users u ON p."creatorId" = u.id 
+    JOIN trends tr ON tr."postId"=p.id WHERE tr."trendId"=(SELECT id FROM trendings WHERE name=$1)
+    ORDER BY p.timestamp DESC 
+    LIMIT 20
+  ;`;
+  return connection.query(queryString, queryData)
+}
+
 export async function setTrendingQuery(queryData) {
   const dataToSqlString = queryData.map(i => (`\"${i}\"`) );
   const queryString = `
@@ -55,7 +72,7 @@ export async function setTrendRelation(userId, trendIds) {
     FROM arr, json_array_elements_text(INTEGER::json) elem
     ON CONFLICT DO NOTHING
     RETURNING trends
-  `
+  ;`;
 
   return connection.query(queryString, queryData)
 }

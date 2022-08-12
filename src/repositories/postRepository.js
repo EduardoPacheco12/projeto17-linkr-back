@@ -8,7 +8,7 @@ async function getPosts() {
       FROM posts p
       JOIN users u ON p."creatorId" = u.id
       ORDER BY p.timestamp DESC
-      LIMIT 2
+      LIMIT 20
     ;`
   );
 }

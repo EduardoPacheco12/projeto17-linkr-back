@@ -3,12 +3,14 @@ import connection from "../databases/postgres.js";
 async function getPosts() {
 	return connection.query(
     `SELECT 
-      p.id, p.url, p.description, u.username, u."pictureUrl", p."creatorId"
-      FROM 
-      posts p
-      JOIN users u ON p."creatorId" = u.id
-      ORDER BY id DESC
-      LIMIT 20
+    p.id, p.url, p.description, u.username, u."pictureUrl", p."creatorId", COUNT(reactions."postId") as likes
+    FROM 
+    posts p
+    JOIN users u ON p."creatorId" = u.id
+    LEFT JOIN reactions ON reactions."postId" = p.id
+    GROUP BY p.id, u.id
+    ORDER BY id DESC
+    LIMIT 20
     `
   );
 }

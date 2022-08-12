@@ -2,6 +2,7 @@ import { tokenMatch } from '../handlers/tokenHandler.js';
 import { likeRepository } from '../repositories/likeRepository.js';
 
 const getLikes = async (req, res) => {
+  console.log(req.params)
   const { postId } = req.params;
   try {
     const {rows} = await likeRepository.getLikesByPostId(postId);

@@ -5,7 +5,7 @@ async function getPosts() {
     `SELECT 
       p.id, p.url, p.description, 
       u.username, u."pictureUrl", p."creatorId",
-      ARRAY(SELECT "trendId" FROM trends WHERE trends."postId"=p.id)
+      ARRAY(SELECT "trendId" FROM trends WHERE trends."postId"=p.id) "trendIds"
       FROM posts p
       JOIN users u ON p."creatorId" = u.id
       LEFT JOIN trends t ON p.id=t."postId"

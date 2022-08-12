@@ -28,7 +28,6 @@ export async function getContentQuery({ data }) {
 export async function getContentData(name) {
   
   const queryData = [name];
-  console.log(queryData);
   const queryString = `
     SELECT 
       p.id, p.url, p.description, 

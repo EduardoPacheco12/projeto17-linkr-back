@@ -3,23 +3,29 @@ import connection from "../databases/postgres.js";
 async function getPosts() {
 	return connection.query(
     `SELECT 
-      p.id, p.url, p.description, u.username, u."pictureUrl", p."creatorId"
-      FROM 
-      posts p
+      p.id, p.url, p.description, 
+      u.username, u."pictureUrl", p."creatorId",
+      ARRAY(SELECT "trendId" FROM trends WHERE trends."postId"=p.id)
+      FROM posts p
       JOIN users u ON p."creatorId" = u.id
-      ORDER BY id DESC
+      LEFT JOIN trends t ON p.id=t."postId"
+      GROUP BY 
+      p.id, p.url, p.description,
+      u.username, u."pictureUrl", p."creatorId"
+      ORDER BY p.timestamp DESC
       LIMIT 20
-    `
+    ;`
   );
 }
+// t."trendId" "trendIds"
 
-async function sendPost(id, description, url) {
+async function sendPost(queryData) {
   const queryString = `
     INSERT INTO posts 
     ("creatorId", description, url) 
     VALUES ($1, $2, $3)
+    RETURNING id, "creatorId", description, url;
   ;`;
-  const queryData = [id, description, url];
 
 	return connection.query(queryString, queryData);
 }

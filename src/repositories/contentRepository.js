@@ -25,18 +25,39 @@ export async function getContentQuery({ data }) {
   return connection.query(queryString, queryData);
 }
 
-export async function setTrendingQuery({ data }) {
-
-  const queryData = [data]
-
+export async function setTrendingQuery(queryData) {
+  const dataToSqlString = queryData.map(i => (`\"${i}\"`) );
   const queryString = `
-    INSERT INTO
-      trendings
-    SELECT $1
-    WHERE NOT EXISTS (SELECT name FROM data WHERE name NOT ILIKE $1)
+    WITH arr(text) AS 
+    (
+      VALUES('[${dataToSqlString}]')
+    )
+    INSERT INTO trendings(name) 
+    SELECT elem::text 
+    FROM arr, json_array_elements_text(text::json) elem
+    ON CONFLICT (name) DO UPDATE SET name=trendings.name
+    RETURNING trendings
   ;`;
 
-  return connection.query(queryString, queryData);
+  return connection.query(queryString);
+}
+
+export async function setTrendRelation(userId, trendIds) {
+  const dataToSqlString = trendIds.map(i => (`\"${i}\"`) );
+  const queryData = [userId];
+  const queryString = `
+    WITH arr(INTEGER) AS 
+    (
+      VALUES('[${dataToSqlString}]')
+    )
+    INSERT INTO trends("postId", "trendId") 
+    SELECT $1, elem::INTEGER 
+    FROM arr, json_array_elements_text(INTEGER::json) elem
+    ON CONFLICT DO NOTHING
+    RETURNING trends
+  `
+
+  return connection.query(queryString, queryData)
 }
 
 export async function getTrendingQuery({ data }) {

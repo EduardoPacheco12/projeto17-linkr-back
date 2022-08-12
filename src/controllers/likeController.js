@@ -7,7 +7,6 @@ const getLikes = async (req, res) => {
     const {rows} = await likeRepository.getLikesByPostId(postId);
     res.status(200).send(rows);
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   }
 }
@@ -40,7 +39,6 @@ const addOrRemoveLike = async (req, res) => {
 
   } catch (err) {
 
-    console.log(err);
     res.sendStatus(500);
   }
 }

@@ -1,5 +1,6 @@
 import getMetadados from '../handlers/postsHandler.js';
 import postsMetadata from '../handlers/postsHandler.js';
+import { setTrendingQuery, setTrendRelation } from '../repositories/contentRepository.js';
 import { postRepository } from '../repositories/postRepository.js'
 
 
@@ -15,12 +16,19 @@ async function getMetadata(posts) {
 
 export async function post(req, res) {
   const { link, description } = req.body;
-  const { id } = res.locals
+  const { id } = res.locals;
+  const queryData = [id, description, link]
 
-  console.log(res.locals)
   try {
-    const { rows: response } = await postRepository.sendPost(id, description, link); 
-    res.stauts(201).send(response[0]);
+    const { rows: response } = await postRepository.sendPost(queryData); 
+    if(res.locals.trendsArray?.length > 0) {
+      const trendData = res.locals.trendsArray;
+      const { rows } = await setTrendingQuery(trendData);
+      const tIds = rows.map(i => `${i['trendings']?.replaceAll(/\D/g, "")}`)
+      await setTrendRelation(response[0]?.id, tIds);
+    }
+    const postInfo = { ...response[0], trendIds: tIds }
+    res.status(201).send(postInfo);
     return;
   } catch(err) {
     res.sendStatus(401);

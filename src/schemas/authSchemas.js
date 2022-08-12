@@ -14,5 +14,5 @@ export const signInSchema = joi.object({
 
 export const postSchema = joi.object({
     link: joi.string().uri().required(),
-    description: joi.string()
+    description: joi.any().allow("")
 })

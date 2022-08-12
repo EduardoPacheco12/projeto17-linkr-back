@@ -1,7 +1,16 @@
 import connection from "../databases/postgres.js";
 
 async function getPosts() {
-	return connection.query('SELECT users.username, users."pictureUrl", posts.*  FROM posts JOIN users ON users.id=posts."creatorId"');
+	return connection.query(
+    `SELECT 
+      p.id, p.url, p.description, u.username, u."pictureUrl", p."creatorId"
+      FROM 
+      posts p
+      JOIN users u ON p."creatorId" = u.id
+      ORDER BY id DESC
+      LIMIT 20
+    `
+  );
 }
 
 async function sendPost(id, description, url) {

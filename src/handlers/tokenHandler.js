@@ -4,7 +4,7 @@ import "dotenv/config";
 const SECRET = process.env.PRIVATE_KEY_JWT;
 
 export function tokenHandler(credentials) {
-  return jwt.sign({ email: credentials.email }, SECRET, { expiresIn: "7d" });
+  return jwt.sign({ email: credentials.email }, SECRET, { expiresIn: "720h" });
 }
 
 export function tokenMatch(authToken) {

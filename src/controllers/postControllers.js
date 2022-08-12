@@ -8,7 +8,11 @@ async function getMetadata(posts) {
   const postsWithMetadata = [];
 
   for(const post of posts) {
-    postsWithMetadata.push(await postsMetadata(post));
+    const postMetadata = await postsMetadata(post.url);
+    const {title, image, description, url} = postMetadata;
+    postsWithMetadata.push(
+      {...post, metadata:{title, image, description, url}}
+    );
   }
 
   return postsWithMetadata;
@@ -35,7 +39,6 @@ export async function post(req, res) {
     return;
   }
 }
-
 
 export async function getPost(req, res) {
   let posts = []
@@ -69,7 +72,13 @@ export async function getPostUser(req, res) {
 
     if(userData.length === 0) return res.sendStatus(404);
 
-    const userPostMetadata = await getMetadata(userData);
+    let userPostMetadata;
+
+    if(userData[0].url) {
+      userPostMetadata = await getMetadata(userData);
+    } else {
+      userPostMetadata = userData;
+    }
 
     res.status(200).send(userPostMetadata);
   } catch(err) {

@@ -76,17 +76,17 @@ export async function setTrendRelation(userId, trendIds) {
   return connection.query(queryString, queryData)
 }
 
-export async function getTrendingQuery({ data }) {
-
-  const queryData = [data];
-
+export async function getTrendingQuery() {
   const queryString = `
-    SELECT ta.id, tr.name hashtag
-    JOIN trendings AS tr ON tr.id = ta.id
-    FROM tags ta
-    GROUP BY ta.id
-    LIMIT 5
+    SELECT 
+      tg.name hashtag,
+      COUNT(tr."trendId") top
+    FROM trendings tg
+    LEFT JOIN trends tr ON tr."trendId"=tg.id
+    GROUP BY hashtag
+    ORDER BY top DESC
+    LIMIT 10
   ;`;
 
-  return connection.query(queryString, queryData);
+  return connection.query(queryString);
 }

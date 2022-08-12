@@ -1,9 +1,21 @@
-import { getContentData } from "../repositories/contentRepository.js"
+import { getContentData, getTrendingQuery } from "../repositories/contentRepository.js"
 
 export async function redirectToHashtag(req, res) {
   try {
     const data = req.params;
     const { rows: response } = await getContentData(data.id)
+    res.status(200).send(response);
+    return;
+  } catch (err) {
+    console.log(err);
+    res.status(400).send();
+    return;
+  }
+}
+
+export async function listTopTrends(req, res) {
+  try {
+    const { rows: response } = await getTrendingQuery()
     res.status(200).send(response);
     return;
   } catch (err) {

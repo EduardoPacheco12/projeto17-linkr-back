@@ -85,3 +85,13 @@ export async function getPostUser(req, res) {
     res.sendStatus(500);
   }
 }
+
+export async function deletePost(req, res) {
+  const { id } = req.params;
+  try {
+    await postRepository.deletePost(id);
+    res.sendStatus(204);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+}

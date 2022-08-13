@@ -42,8 +42,23 @@ async function getPostUserId(userId) {
   );
 }
 
+async function deletePost(id) {
+  return connection.query('DELETE FROM posts WHERE id = $1', [id]);
+}
+
+async function verifyId(id) {
+  return connection.query('SELECT * FROM posts WHERE id = $1', [id]);
+}
+
+async function veridfyPostUser(id, userId) {
+  return connection.query('SELECT * FROM posts WHERE posts.id = $1 AND posts."creatorId" = $2',[Number(id), userId])
+}
+
 export const postRepository = {
     getPosts,
     sendPost,
-    getPostUserId
+    getPostUserId,
+    deletePost,
+    verifyId,
+    veridfyPostUser
 }

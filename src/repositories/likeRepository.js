@@ -1,8 +1,8 @@
 import connection from "../databases/postgres.js";
 
 async function getLikesByPostId(postId){
-  return db.query(`
-    SELECT u.name
+  return connection.query(`
+    SELECT u.username
     FROM users u
     JOIN reactions 
     ON "userId" = u.id

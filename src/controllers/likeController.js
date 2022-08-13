@@ -5,9 +5,10 @@ const getLikes = async (req, res) => {
   console.log(req.params)
   const { postId } = req.params;
   try {
-    const {rows} = await likeRepository.getLikesByPostId(postId);
-    res.status(200).send(rows);
+    const usersWhoLikes = await likeRepository.getLikesByPostId(postId);
+    res.status(200).send(usersWhoLikes.rows);
   } catch (err) {
+    console.log(err)
     res.sendStatus(500);
   }
 }

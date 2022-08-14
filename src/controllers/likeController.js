@@ -2,7 +2,6 @@ import { tokenMatch } from '../handlers/tokenHandler.js';
 import { likeRepository } from '../repositories/likeRepository.js';
 
 const getLikes = async (req, res) => {
-  console.log(req.params)
   const { postId } = req.params;
   try {
     const usersWhoLikes = await likeRepository.getLikesByPostId(postId);
@@ -15,7 +14,7 @@ const getLikes = async (req, res) => {
 
 const addOrRemoveLike = async (req, res) => {
   const token = req.headers.authorization;
-  const user_id = tokenMatch(token)[1]
+  const user_id = tokenMatch(token)
 
   const { postId } = req.params;
 
@@ -40,7 +39,7 @@ const addOrRemoveLike = async (req, res) => {
     res.sendStatus(201);
 
   } catch (err) {
-
+    // console.log(err);
     res.sendStatus(500);
   }
 }

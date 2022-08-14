@@ -10,12 +10,9 @@ export function tokenHandler(credentials) {
 export function tokenMatch(authToken) {
   try {
     const token = authToken?.replace("Bearer ", "");
-    if (token && jwt.verify(token, SECRET)) {
-      const id = Object.entries(jwt.verify(token, SECRET))[0];
-      return id;
-    }
-    return true;
-  } catch (err) {
+    const { id: userId } = jwt.verify(token, process.env.PRIVATE_KEY_JWT);
+    return userId;
+  } catch(err) {
     return false;
   }
 }

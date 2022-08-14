@@ -4,7 +4,7 @@ import { postSchema } from "../schemas/authSchemas.js";
 
 export async function PostMiddleware(req, res, next) {
   const token = req.headers.authorization;
-  const user_id = tokenMatch(token)[1]
+  const user_id = tokenMatch(token);
 
   const body = req.body;
 

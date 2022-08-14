@@ -3,7 +3,10 @@ import connection from "../databases/postgres.js";
 async function getPosts() {
 	return connection.query(
     `SELECT 
-      p.id, p.url, p.description, u.username, u."pictureUrl", p."creatorId", COUNT(reactions."postId") as likes
+      p.id, p.url, p.description, p."creatorId", 
+      u.username, u."pictureUrl", 
+      COUNT(reactions."postId") AS likes,
+      ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id) AS "usersWhoLiked"
       FROM posts p
       JOIN users u ON p."creatorId" = u.id
       LEFT JOIN reactions ON reactions."postId" = p.id
@@ -13,7 +16,6 @@ async function getPosts() {
     ;`
   );
 }
-// t."trendId" "trendIds"
 
 async function sendPost(queryData) {
   const queryString = `

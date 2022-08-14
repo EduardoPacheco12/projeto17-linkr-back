@@ -21,6 +21,5 @@ app.use(postRoutes);
 app.use(likeRouter);
 
 app.listen(process.env.PORT, () => {
-    console.log(`Mode: ${process.env.MODE || "DEV"}`)
     console.log(`Server running on port ${process.env.PORT}`);
 });

@@ -22,6 +22,7 @@ export async function SignIn(req, res) {
             expiresIn: 3600 // expires in 1h
         });
         const info = {
+            id,
             token,
             pictureUrl
         }

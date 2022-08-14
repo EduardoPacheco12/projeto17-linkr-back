@@ -19,25 +19,25 @@ export async function SignUpMiddleware(req, res, next) {
 }
 
 export async function SignInMiddleware(req, res, next) {
-    const body = req.body;
+  const body = req.body;
 
-    const { error } = signInSchema.validate(body, { abortEarly: false });
-    if (error) {
-        return res.status(422).send(error.details);
-    }
+  const { error } = signInSchema.validate(body, { abortEarly: false });
+  if (error) {
+      return res.status(422).send(error.details);
+  }
 
-    const { rows: verifyUser } = await authRepository.SignMiddleware(body.email);
-    if(!verifyUser[0]) {
-        return res.sendStatus(401);
-    }
+  const { rows: verifyUser } = await authRepository.SignMiddleware(body.email);
+  if(!verifyUser[0]) {
+      return res.sendStatus(401);
+  }
 
-    const verifyPassword = bcrypt.compareSync(body.password, verifyUser[0].password);
-    if(!verifyPassword) {
-        return res.sendStatus(401);
-    }
+  const verifyPassword = bcrypt.compareSync(body.password, verifyUser[0].password);
+  if(!verifyPassword) {
+      return res.sendStatus(401);
+  }
 
-    res.locals.id = verifyUser[0].id
-    res.locals.pictureUrl = verifyUser[0].pictureUrl;
+  res.locals.id = verifyUser[0].id
+  res.locals.pictureUrl = verifyUser[0].pictureUrl;
 
-    next();
+  next();
 }

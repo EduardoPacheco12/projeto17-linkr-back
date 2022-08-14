@@ -3,10 +3,11 @@ import connection from "../databases/postgres.js";
 async function getPosts() {
 	return connection.query(
     `SELECT 
-      p.id, p.url, p.description, 
-      u.username, u."pictureUrl", p."creatorId"
+      p.id, p.url, p.description, u.username, u."pictureUrl", p."creatorId", COUNT(reactions."postId") as likes
       FROM posts p
       JOIN users u ON p."creatorId" = u.id
+      LEFT JOIN reactions ON reactions."postId" = p.id
+      GROUP BY p.id, u.id
       ORDER BY p.timestamp DESC
       LIMIT 20
     ;`
@@ -41,8 +42,28 @@ async function getPostUserId(userId) {
   );
 }
 
+async function deletePost(id) {
+  return connection.query('DELETE FROM posts WHERE id = $1', [id]);
+}
+
+async function verifyId(id) {
+  return connection.query('SELECT * FROM posts WHERE id = $1', [id]);
+}
+
+async function veridfyPostUser(id, userId) {
+  return connection.query('SELECT * FROM posts WHERE posts.id = $1 AND posts."creatorId" = $2',[Number(id), userId])
+}
+
+async function  updatePost(id, description) {
+  return connection.query('UPDATE posts SET description = $1 WHERE id = $2', [description, Number(id)])
+}
+
 export const postRepository = {
     getPosts,
     sendPost,
-    getPostUserId
+    getPostUserId,
+    deletePost,
+    verifyId,
+    veridfyPostUser,
+    updatePost
 }

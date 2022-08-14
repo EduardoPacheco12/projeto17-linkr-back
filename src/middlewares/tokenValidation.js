@@ -1,3 +1,6 @@
+import jwt from "jsonwebtoken";
+import  {tokenMatch} from "../handlers/tokenHandler.js";
+
 
 const schema = {
   // joi validations go here
@@ -29,7 +32,36 @@ export default async function validateEntry(req, res, next) {
   next();
 }
 
+export function tokenValidate(req, res, next){
+  const token = req.headers.authorization;
+  const user_id = tokenMatch(token)[1]
+
+  if(!tokenMatch(token)) { 
+    return res.sendStatus(401)
+  }
+
+  res.locals.id = user_id;
+  next();
+}
 
 function setSchema(objectData) {
   return "";
+}
+
+export async function tokenValidation(req, res, next) {
+  const { authorization } = req.headers;
+  if(!authorization) {
+      return res.sendStatus(401);
+  }
+
+  const token = authorization?.replace('Bearer ', '');
+  await jwt.verify(token, process.env.PRIVATE_KEY_JWT, function(err, decoded) {
+      if (err) {
+          return res.sendStatus(401);
+      }
+
+      res.locals.userId = decoded.id;
+      next();
+  });
+
 }

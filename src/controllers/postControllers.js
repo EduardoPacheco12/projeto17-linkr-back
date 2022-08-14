@@ -95,3 +95,14 @@ export async function deletePost(req, res) {
     res.status(500).send(error);
   }
 }
+
+export async function updatePost(req, res) {
+  const { id } = req.params;
+  const { description } = req.body;
+  try {
+    await postRepository.updatePost(id, description);
+    res.sendStatus(200);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+}

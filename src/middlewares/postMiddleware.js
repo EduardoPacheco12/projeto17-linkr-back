@@ -20,7 +20,7 @@ export async function PostMiddleware(req, res, next) {
   next();
 }
 
-export async function deletePostMiddleware(req, res, next) {
+export async function deleteUpdatePostMiddleware(req, res, next) {
   const { id } = req.params;
   const userId = res.locals.userId;
 

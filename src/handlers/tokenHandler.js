@@ -11,8 +11,8 @@ export function tokenMatch(authToken) {
   try {
     const token = authToken?.replace("Bearer ", "");
     if (token && jwt.verify(token, SECRET)) {
-      const email = Object.entries(jwt.verify(token, SECRET))[0];
-      return email;
+      const id = Object.entries(jwt.verify(token, SECRET))[0];
+      return id;
     }
     return true;
   } catch (err) {

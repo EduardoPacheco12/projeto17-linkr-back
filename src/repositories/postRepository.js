@@ -54,11 +54,16 @@ async function veridfyPostUser(id, userId) {
   return connection.query('SELECT * FROM posts WHERE posts.id = $1 AND posts."creatorId" = $2',[Number(id), userId])
 }
 
+async function  updatePost(id, description) {
+  return connection.query('UPDATE posts SET description = $1 WHERE id = $2', [description, Number(id)])
+}
+
 export const postRepository = {
     getPosts,
     sendPost,
     getPostUserId,
     deletePost,
     verifyId,
-    veridfyPostUser
+    veridfyPostUser,
+    updatePost
 }

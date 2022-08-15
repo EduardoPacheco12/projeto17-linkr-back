@@ -43,8 +43,9 @@ async function getPostUserId(userId) {
     LEFT JOIN reactions 
     ON reactions."postId" = p.id
     WHERE users.id = $1
-    GROUP BY users.id, p.id
-    ORDER BY p.id DESC;
+    GROUP BY users.id, posts.id
+    ORDER BY posts.id DESC
+    LIMIT 10;
     `,
     [ userId ]
   );
@@ -62,7 +63,7 @@ async function veridfyPostUser(id, userId) {
   return connection.query('SELECT * FROM posts WHERE posts.id = $1 AND posts."creatorId" = $2',[Number(id), userId])
 }
 
-async function  updatePost(id, description) {
+async function updatePost(id, description) {
   return connection.query('UPDATE posts SET description = $1 WHERE id = $2', [description, Number(id)])
 }
 

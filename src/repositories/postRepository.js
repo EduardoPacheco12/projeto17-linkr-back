@@ -3,17 +3,20 @@ import connection from "../databases/postgres.js";
 async function getPosts() {
 	return connection.query(
     `SELECT 
-      p.id, p.url, p.description, u.username, u."pictureUrl", p."creatorId", COUNT(reactions."postId") as likes
-      FROM posts p
-      JOIN users u ON p."creatorId" = u.id
-      LEFT JOIN reactions ON reactions."postId" = p.id
-      GROUP BY p.id, u.id
-      ORDER BY p.timestamp DESC
-      LIMIT 20
+    p.id, p.url, p.description, p."creatorId", 
+    u.username, u."pictureUrl", 
+    COUNT(reactions."postId") AS likes,
+    ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id) AS "usersWhoLiked" ,
+    ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id) AS "nameWhoLiked"
+    FROM posts p
+    JOIN users u ON p."creatorId" = u.id
+    LEFT JOIN reactions ON reactions."postId" = p.id
+    GROUP BY p.id, u.id
+    ORDER BY p.timestamp DESC
+    LIMIT 20
     ;`
   );
 }
-// t."trendId" "trendIds"
 
 async function sendPost(queryData) {
   const queryString = `
@@ -30,10 +33,15 @@ async function getPostUserId(userId) {
   return connection.query(
     `
     SELECT users.username, users."pictureUrl",
-    posts.*
+    p.*,
+    COUNT(reactions."postId") AS likes,
+    ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id) AS "usersWhoLiked",
+    ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id) AS "nameWhoLiked"
     FROM users
-    LEFT JOIN posts
-    ON users.id = posts."creatorId"
+    LEFT JOIN posts p
+    ON users.id = p."creatorId"
+    LEFT JOIN reactions 
+    ON reactions."postId" = p.id
     WHERE users.id = $1
     GROUP BY users.id, posts.id
     ORDER BY posts.id DESC

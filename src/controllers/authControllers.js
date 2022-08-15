@@ -19,7 +19,7 @@ export async function SignIn(req, res) {
     const pictureUrl = res.locals.pictureUrl;
     try {
         const token = jwt.sign({ id }, process.env.PRIVATE_KEY_JWT, {
-            expiresIn: 3600 // expires in 1h
+            expiresIn: '7d' // expires in 7 days
         });
         const info = {
             id,

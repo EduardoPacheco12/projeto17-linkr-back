@@ -119,6 +119,7 @@ export async function getPostUser(req, res) {
 
     res.status(200).send(userPostMetadata);
   } catch(err) {
+    console.log(err);
     res.sendStatus(500);
   }
 }

@@ -55,7 +55,7 @@ export async function tokenValidation(req, res, next) {
   }
 
   const token = authorization?.replace('Bearer ', '');
-  await jwt.verify(token, process.env.PRIVATE_KEY_JWT, function(err, decoded) {
+  jwt.verify(token, process.env.PRIVATE_KEY_JWT, function(err, decoded) {
       if (err) {
           return res.sendStatus(401);
       }

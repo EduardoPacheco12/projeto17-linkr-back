@@ -2,7 +2,42 @@ import getMetadados from '../handlers/postsHandler.js';
 import postsMetadata from '../handlers/postsHandler.js';
 import { setTrendingQuery, setTrendRelation } from '../repositories/contentRepository.js';
 import { postRepository } from '../repositories/postRepository.js'
+import { trendsRepository } from '../repositories/trendsRepository.js';
 
+async function registerTrend(trendName) {
+  const { rows: registeredTrend } = await trendsRepository.getTrends(trendName);
+
+  if(registeredTrend.length > 0) return;
+  await trendsRepository.setNewTrend(trendName);
+}
+
+async function getTrendsPost(postId, trendsArray) {
+  const { rows: trends } = await trendsRepository.getPostTrends(postId);
+
+  const trendsToDelete = trends.filter(trend => trendsArray.indexOf(trend.name) === -1);
+  trendsToDelete.forEach(async trend => await trendsRepository.deletePostTrend(trend.id));
+
+  const filterNewtrands = trend => {
+    for(let i = 0; i < trends.length; i++) {
+      if(trend === trends[i].name) {
+        return false;
+      }
+    }
+  
+    return true;
+  }
+
+  const trendsToAdd = trendsArray.filter(filterNewtrands);
+  trendsToAdd.forEach(async trend => await registerTrend(trend));
+
+  const trendsIdToAdd = [];
+  for(const trendName of trendsToAdd) {
+    const { rows:trendId } = await trendsRepository.getTrendId(trendName);
+    trendsIdToAdd.push(trendId[0].id);
+  };
+
+  return trendsIdToAdd;
+}
 
 async function getMetadata(posts) {
   const postsWithMetadata = [];
@@ -17,6 +52,8 @@ async function getMetadata(posts) {
 
   return postsWithMetadata;
 }
+
+
 
 export async function post(req, res) {
   const { link, description } = req.body;
@@ -99,7 +136,15 @@ export async function deletePost(req, res) {
 export async function updatePost(req, res) {
   const { id } = req.params;
   const { description } = req.body;
+  const { trendsArray } = res.locals;
+
   try {
+    const newTrendsId = await getTrendsPost( id, trendsArray );
+
+    if(newTrendsId.length > 0) {
+      newTrendsId.forEach(async trendId => await trendsRepository.setPostTrendRelation(id, trendId));
+    }
+
     await postRepository.updatePost(id, description);
     res.sendStatus(200);
   } catch (error) {

@@ -11,6 +11,6 @@ router.post("/publish", PostMiddleware, trendSelector, post);
 router.get("/timeline", validateToken, getPost);
 router.get("/posts/:userid", validateToken, getPostUser);
 router.delete("/posts/:id", tokenValidation, deleteUpdatePostMiddleware, deletePost);
-router.patch("/posts/:id", tokenValidation, deleteUpdatePostMiddleware, updatePost);
+router.patch("/posts/:id", tokenValidation, trendSelector, deleteUpdatePostMiddleware, updatePost);
 
 export default router;

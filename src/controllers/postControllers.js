@@ -43,17 +43,22 @@ async function getMetadata(posts) {
   const postsWithMetadata = [];
 
   for(const post of posts) {
-    const postMetadata = await postsMetadata(post.url);
-    const {title, image, description, url} = postMetadata;
-    postsWithMetadata.push(
-      {...post, metadata:{title, image, description, url}}
-    );
+    try {
+      const postMetadata = await postsMetadata(post.url);
+      const {title, image, description, url} = postMetadata;
+      postsWithMetadata.push(
+        {...post, metadata:{title, image, description, url}}
+      );
+    } catch(err) {
+      postsWithMetadata.push(
+        {...post, metadata:{title: "", image: "", description: "", url: ""}}
+      );
+
+    }
   }
 
   return postsWithMetadata;
 }
-
-
 
 export async function post(req, res) {
   const { link, description } = req.body;

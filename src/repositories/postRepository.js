@@ -43,8 +43,8 @@ async function getPostUserId(userId) {
     LEFT JOIN reactions 
     ON reactions."postId" = p.id
     WHERE users.id = $1
-    GROUP BY users.id, posts.id
-    ORDER BY posts.id DESC
+    GROUP BY users.id, p.id
+    ORDER BY p.id DESC
     LIMIT 20;
     `,
     [ userId ]

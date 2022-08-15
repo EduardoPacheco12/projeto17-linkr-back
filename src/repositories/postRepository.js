@@ -45,7 +45,7 @@ async function getPostUserId(userId) {
     WHERE users.id = $1
     GROUP BY users.id, posts.id
     ORDER BY posts.id DESC
-    LIMIT 10;
+    LIMIT 20;
     `,
     [ userId ]
   );

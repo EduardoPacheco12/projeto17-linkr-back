@@ -53,8 +53,6 @@ async function getMetadata(posts) {
   return postsWithMetadata;
 }
 
-
-
 export async function post(req, res) {
   const { link, description } = req.body;
   const { id } = res.locals;

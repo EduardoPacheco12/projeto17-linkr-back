@@ -36,7 +36,8 @@ async function getPostUserId(userId) {
     ON users.id = posts."creatorId"
     WHERE users.id = $1
     GROUP BY users.id, posts.id
-    ORDER BY posts.id DESC;
+    ORDER BY posts.id DESC
+    LIMIT 10;
     `,
     [ userId ]
   );

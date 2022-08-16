@@ -39,33 +39,42 @@ async function getTrendsPost(postId, trendsArray) {
   return trendsIdToAdd;
 }
 
-async function getMetadata(posts) {
-  const postsWithMetadata = [];
+async function getMetadata(link) {
+  let postsWithMetadata;
 
-  for(const post of posts) {
-    try {
-      const postMetadata = await postsMetadata(post.url);
-      const {title, image, description, url} = postMetadata;
-      postsWithMetadata.push(
-        {...post, metadata:{title, image, description, url}}
-      );
-    } catch(err) {
-      postsWithMetadata.push(
-        {...post, metadata:{title: "", image: "", description: "", url: ""}}
-      );
+  try {
+    const postMetadata = await postsMetadata(link);
 
-    }
+    const {title, image, description, url} = postMetadata;
+    postsWithMetadata = {title, image, description, url};
+  } catch(err) {
+    postsWithMetadata = {title: "", image: "", description: "", url: ""};
   }
 
   return postsWithMetadata;
 }
 
 export async function post(req, res) {
-  const { link, description } = req.body;
+  const { link, description: post } = req.body;
   const { id } = res.locals;
-  const queryData = [id, description, link]
+  let queryData;
 
   try {
+    const { rows: registeredMetadata } = await postRepository.getMetadata(link);
+
+    if(registeredMetadata.length === 0) {
+      const postMetadata = await getMetadata(link);
+      const { title, description: descriptionMetadata, image }  = postMetadata;
+  
+      await postRepository.setPostMetadata(title, descriptionMetadata, image, link);
+  
+      const { rows: metadata } = await postRepository.getMetadata(link);
+  
+      queryData = [ id, post, metadata[0].id ];
+    } else {
+      queryData = [ id, post, registeredMetadata[0].id ];
+    }
+
     const { rows: response } = await postRepository.sendPost(queryData); 
     if(res.locals.trendsArray?.length > 0) {
       const trendData = res.locals.trendsArray;
@@ -77,7 +86,7 @@ export async function post(req, res) {
     res.status(201).send(postInfo);
     return;
   } catch(err) {
-    res.sendStatus(401);
+    res.sendStatus(500);
     return;
   }
 }
@@ -87,20 +96,7 @@ export async function getPost(req, res) {
   try {
     const { rows: allPosts } = await postRepository.getPosts();
 
-    for(let post of allPosts){
-      try{
-
-        const metadata = await getMetadados(post.url);
-        const {title, image, description, url} = metadata;
-        posts.push({...post, metadata:{title, image, description, url}})
-      }catch (error) {
-        const metadata = { title: "", image: "", description: "" }
-        const {title, image, description, url} = metadata;
-        posts.push({...post, metadata:{title, image, description, url}})
-      }
-    }
-
-    res.status(200).send(posts);
+    res.status(200).send(allPosts);
   } catch(err) {
     res.sendStatus(500);
   }
@@ -114,17 +110,8 @@ export async function getPostUser(req, res) {
 
     if(userData.length === 0) return res.sendStatus(404);
 
-    let userPostMetadata;
-
-    if(userData[0].url) {
-      userPostMetadata = await getMetadata(userData);
-    } else {
-      userPostMetadata = userData;
-    }
-
-    res.status(200).send(userPostMetadata);
+    res.status(200).send(userData);
   } catch(err) {
-    console.log(err);
     res.sendStatus(500);
   }
 }
@@ -148,7 +135,9 @@ export async function updatePost(req, res) {
     const newTrendsId = await getTrendsPost( id, trendsArray );
 
     if(newTrendsId.length > 0) {
-      newTrendsId.forEach(async trendId => await trendsRepository.setPostTrendRelation(id, trendId));
+      newTrendsId.forEach(async trendId => {
+        await trendsRepository.setPostTrendRelation(id, trendId)
+      });
     }
 
     await postRepository.updatePost(id, description);

@@ -6,8 +6,8 @@ async function getPosts() {
     p.id, metadatas.url, p.post AS description, p."creatorId", 
     u.username, u."pictureUrl", 
     COUNT(reactions."postId") AS likes,
-    ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id) AS "usersWhoLiked" ,
-    ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id) AS "nameWhoLiked",
+    ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
+    ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id ORDER BY users.id ASC) AS "nameWhoLiked",
     json_build_object(
       'title', metadatas.title,
       'image', metadatas.image,
@@ -63,8 +63,8 @@ async function getPostUserId(userId) {
     SELECT users.username, users."pictureUrl",
     p.id, p.post AS description, p."creatorId", metadatas.url,
     COUNT(reactions."postId") AS likes,
-    ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id) AS "usersWhoLiked",
-    ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id) AS "nameWhoLiked",
+    ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
+    ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id ORDER BY users.id ASC) AS "nameWhoLiked",
     json_build_object(
       'title', metadatas.title,
       'image', metadatas.image,

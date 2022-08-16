@@ -18,12 +18,32 @@ async function getPosts() {
   );
 }
 
+async function setPostMetadata(title, description, image, url) {
+  return connection.query(
+    `
+    INSERT INTO metadatas ( title, description, image, url )
+    VALUES ( $1, $2, $3, $4 );
+    `,
+    [ title, description, image, url ]
+  );
+}
+
+async function getMetadata(url) {
+  return connection.query(
+    `
+    SELECT * FROM metadatas
+    WHERE url = $1;
+    `,
+    [ url ]
+  );
+}
+
 async function sendPost(queryData) {
   const queryString = `
     INSERT INTO posts 
-    ("creatorId", description, url) 
+    ("creatorId", post, "metaId") 
     VALUES ($1, $2, $3)
-    RETURNING id, "creatorId", description, url;
+    RETURNING id, "creatorId", post, "metaId"
   ;`;
 
 	return connection.query(queryString, queryData);
@@ -69,6 +89,8 @@ async function updatePost(id, description) {
 
 export const postRepository = {
     getPosts,
+    setPostMetadata,
+    getMetadata,
     sendPost,
     getPostUserId,
     deletePost,

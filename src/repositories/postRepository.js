@@ -6,8 +6,8 @@ async function getPosts() {
     p.id, p.url, p.description, p."creatorId", 
     u.username, u."pictureUrl", 
     COUNT(reactions."postId") AS likes,
-    ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id) AS "usersWhoLiked" ,
-    ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id) AS "nameWhoLiked"
+    ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
+    ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id ORDER BY users.id ASC) AS "nameWhoLiked"
     FROM posts p
     JOIN users u ON p."creatorId" = u.id
     LEFT JOIN reactions ON reactions."postId" = p.id
@@ -35,8 +35,8 @@ async function getPostUserId(userId) {
     SELECT users.username, users."pictureUrl",
     p.*,
     COUNT(reactions."postId") AS likes,
-    ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id) AS "usersWhoLiked",
-    ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id) AS "nameWhoLiked"
+    ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
+    ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id ORDER BY users.id ASC) AS "nameWhoLiked"
     FROM users
     LEFT JOIN posts p
     ON users.id = p."creatorId"

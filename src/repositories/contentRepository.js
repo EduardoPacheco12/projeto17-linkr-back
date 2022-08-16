@@ -31,10 +31,19 @@ export async function getContentData(name) {
   const queryString = `
     SELECT 
       p.id, p.url, p.description, 
-      u.username, u."pictureUrl", p."creatorId" 
+      u.username, u."pictureUrl", p."creatorId", 
+      COUNT(reactions."postId") AS likes,
+      ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id) AS "usersWhoLiked",
+      ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id) AS "nameWhoLiked"
     FROM posts p 
-    JOIN users u ON p."creatorId" = u.id 
-    JOIN trends tr ON tr."postId"=p.id WHERE tr."trendId"=(SELECT id FROM trendings WHERE name=$1)
+    JOIN users u 
+    ON p."creatorId" = u.id 
+    LEFT JOIN reactions 
+    ON reactions."postId" = p.id
+    JOIN trends tr 
+    ON tr."postId"=p.id WHERE tr."trendId"=(SELECT id FROM trendings WHERE name=$1)
+    GROUP BY p.id, p.url, p.description, 
+    u.username, u."pictureUrl", p."creatorId" 
     ORDER BY p.timestamp DESC 
     LIMIT 20
   ;`;

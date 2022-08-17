@@ -6,10 +6,10 @@ const getRePosts = async (req, res) => {
   const {postId} = req.params;
   const userId = res.locals.userId;
   try {
-    const rePosts = await rePostRepository.countRePost(postId);
+    const {rows:{[0]:rePosts}} = await rePostRepository.countRePost(postId, userId);
 
     
-    res.status(200).send(rePosts.rows);
+    res.status(200).send(rePosts);
   } catch (err) {
     console.log(err)
     res.sendStatus(500);
@@ -18,10 +18,12 @@ const getRePosts = async (req, res) => {
 
 const makeRePost = async (req, res) => {
   const userId = res.locals.userId;
-  console.log("usreId", userId)
-
   const { postId } = req.params;
 
+  if(postId == 'undefined'){
+    return res.sendStatus(404);
+  }
+  
   try {
     
     const postExist = await likeRepository.checkPostExist(postId);
@@ -30,6 +32,7 @@ const makeRePost = async (req, res) => {
       res.sendStatus(404);
       return;
     }
+
     const postIsPosted = await rePostRepository.checkRePost(postId, userId);
 
     if(postIsPosted.rowCount > 0){

@@ -1,4 +1,3 @@
-import getMetadados from '../handlers/postsHandler.js';
 import postsMetadata from '../handlers/postsHandler.js';
 import { setTrendingQuery, setTrendRelation } from '../repositories/contentRepository.js';
 import { postRepository } from '../repositories/postRepository.js'

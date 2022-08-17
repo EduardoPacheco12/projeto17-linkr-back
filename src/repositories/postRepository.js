@@ -6,6 +6,7 @@ async function getPosts() {
     p.id, metadatas.url, p.post AS description, p."creatorId", 
     u.username, u."pictureUrl", 
     COUNT(reactions."postId") AS likes,
+    COUNT(comments."postId") AS comments,
     ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
     ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id ORDER BY users.id ASC) AS "nameWhoLiked",
     json_build_object(
@@ -18,6 +19,7 @@ async function getPosts() {
     JOIN users u ON p."creatorId" = u.id
     JOIN metadatas ON p."metaId" = metadatas.id
     LEFT JOIN reactions ON reactions."postId" = p.id
+    LEFT JOIN comments ON comments."postId" = p.id
     GROUP BY p.id, u.id,
     metadatas.url, metadatas.title, metadatas.image, metadatas.description
     ORDER BY p."postTime" DESC

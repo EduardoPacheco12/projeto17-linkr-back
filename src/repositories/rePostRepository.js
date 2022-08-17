@@ -1,11 +1,12 @@
 import connection from "../databases/postgres.js";
 
-async function countRePost(postId) {
+async function countRePost(postId, userId) {
   return connection.query(`
-    SELECT COUNT("postId")
-    FROM shares
-    WHERE "postId" = $1
-  `, [postId]);
+  SELECT (SELECT EXISTS (SELECT * FROM shares WHERE "postId"=$1 AND "userId"=$2) as shared),
+  COUNT("postId")
+  FROM shares
+  WHERE "postId"=$1;
+  `, [postId, userId]);
 }
 
 async function insertRePost(postId,userId) {

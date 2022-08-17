@@ -60,8 +60,8 @@ async function sendPost(queryData) {
 async function getPostUserId(userId) {
   return connection.query(
     `
-    SELECT users.username, users."pictureUrl",
-    p.id, p.post AS description, p."creatorId", metadatas.url,
+    SELECT users.username, users."pictureUrl", users.id AS "creatorId",
+    p.id, p.post AS description, metadatas.url,
     COUNT(reactions."postId") AS likes,
     ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
     ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id ORDER BY users.id ASC) AS "nameWhoLiked",
@@ -74,12 +74,14 @@ async function getPostUserId(userId) {
     FROM users
     LEFT JOIN posts p
     ON users.id = p."creatorId"
-    JOIN metadatas
+    LEFT JOIN metadatas
     ON p."metaId" = metadatas.id
     LEFT JOIN reactions 
     ON reactions."postId" = p.id
+    LEFT JOIN relations
+    ON relations.followed = users.id
     WHERE users.id = $1
-    GROUP BY users.id, p.id,
+    GROUP BY users.id, p.id, relations.id,
     metadatas.url, metadatas.title, metadatas.image, metadatas.description
     ORDER BY p.id DESC
     LIMIT 20;

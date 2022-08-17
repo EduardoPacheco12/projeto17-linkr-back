@@ -30,7 +30,7 @@ export async function getContentData(name) {
   const queryData = [name];
   const queryString = `
     SELECT 
-      p.id, p.url, p.description, 
+      p.id, metadatas.url, p.post AS description,
       u.username, u."pictureUrl", p."creatorId", 
       COUNT(reactions."postId") AS likes,
       ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id) AS "usersWhoLiked",
@@ -40,11 +40,13 @@ export async function getContentData(name) {
     ON p."creatorId" = u.id 
     LEFT JOIN reactions 
     ON reactions."postId" = p.id
+    LEFT JOIN metadatas
+    ON metadatas.id = p."metaId"
     JOIN trends tr 
     ON tr."postId"=p.id WHERE tr."trendId"=(SELECT id FROM trendings WHERE name=$1)
-    GROUP BY p.id, p.url, p.description, 
+    GROUP BY p.id, metadatas.url, p.post,
     u.username, u."pictureUrl", p."creatorId" 
-    ORDER BY p.timestamp DESC 
+    ORDER BY p."postTime" DESC 
     LIMIT 20
   ;`;
   return connection.query(queryString, queryData)

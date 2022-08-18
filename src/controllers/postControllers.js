@@ -145,3 +145,27 @@ export async function updatePost(req, res) {
     res.status(500).send(error);
   }
 }
+
+export async function getComments(req, res) {
+  const userId = res.locals.userId;
+  const { postId } = req.params;
+
+  try {
+    const { rows: comments } = await postRepository.getComments(postId);
+    res.status(200).send(comments);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+}
+
+export async function postComments(req, res) {
+  const userId = res.locals.userId;
+  const { postId } = req.params;
+  const { text } = req.body;
+  try {
+    await postRepository.postComment(text, userId, postId);
+    res.sendStatus(201);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+}

@@ -78,10 +78,8 @@ async function getPostUserId(userId) {
     ON p."metaId" = metadatas.id
     LEFT JOIN reactions 
     ON reactions."postId" = p.id
-    LEFT JOIN relations
-    ON relations.followed = users.id
     WHERE users.id = $1
-    GROUP BY users.id, p.id, relations.id,
+    GROUP BY users.id, p.id,
     metadatas.url, metadatas.title, metadatas.image, metadatas.description
     ORDER BY p.id DESC
     LIMIT 20;

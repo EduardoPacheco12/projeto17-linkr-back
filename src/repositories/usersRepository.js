@@ -2,9 +2,12 @@ import connection from "../databases/postgres.js";
 
 async function getUserByName(name) {
   return connection.query(
-    `SELECT id, username, "pictureUrl"
+    `
+    SELECT id, username, "pictureUrl"
     FROM users
-    WHERE username LIKE $1;`,
+    WHERE username LIKE $1
+    LIMIT 6;
+    `,
     [ `${ name }%` ]
   );
 }
@@ -48,10 +51,27 @@ async function deleteFollowRelation(relationId) {
   )
 }
 
+async function searchFollowed(name, userId) {
+  return connection.query(
+    `
+    SELECT users.id, users.username, users."pictureUrl",
+    relations.follower
+    FROM users
+    JOIN relations
+    ON users.id = relations.followed
+    WHERE relations.follower = $1 AND
+    users.username LIKE $2
+    LIMIT 6;
+    `,
+    [ userId, `${name}%`]
+  );
+}
+
 export const usersRepository = {
   getUserByName,
   returnPictureUser,
   searchFollowRelation,
   setFollowRelation,
-  deleteFollowRelation
+  deleteFollowRelation,
+  searchFollowed
 };

@@ -3,11 +3,19 @@ import { usersRepository } from "../repositories/usersRepository.js";
 
 export async function searchUser(req, res) {
   const { name } = req.query;
+  const { userId } = res.locals;
 
   try {
     const { rows: usersData } = await usersRepository.getUserByName(name);
+    const { rows: followedData } = await usersRepository.searchFollowed(name, userId);
 
-    res.status(200).send(usersData);
+    const followedId = followedData.map(followed => followed.id);
+
+    for(const userData of usersData) {
+      if(!followedId.includes(userData.id)) followedData.push(userData);
+    }
+
+    res.status(200).send(followedData);
   } catch(err) {
     res.sendStatus(500);
   }

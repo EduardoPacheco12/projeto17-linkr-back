@@ -2,34 +2,23 @@ import connection from "../databases/postgres.js";
 
 async function getPosts(page) {
   const queryParams = [page];
-  return connection.query(
-    `SELECT 
-    p.id, metadatas.url, p.post AS description, p."creatorId", 
-    u.username, u."pictureUrl", 
-    COUNT(reactions."postId") AS likes,
-    COUNT(comments."postId") AS comments,
-    COUNT(p.id) OVER() "tableLength",
-    ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
-    ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id ORDER BY users.id ASC) AS "nameWhoLiked",
-    json_build_object(
-      'title', metadatas.title,
-      'image', metadatas.image,
-      'description', metadatas.description,
-      'url', metadatas.url
-    ) AS metadata
-    FROM posts p
-    JOIN users u ON p."creatorId" = u.id
-    JOIN metadatas ON p."metaId" = metadatas.id
-    LEFT JOIN reactions ON reactions."postId" = p.id
-    LEFT JOIN comments ON comments."postId" = p.id
-    GROUP BY p.id, u.id,
-    metadatas.url, metadatas.title, metadatas.image, metadatas.description
-    ORDER BY p."postTime" DESC
+  const queryString = `
+  SELECT 
+    posts.post, posts."postTime", NULL AS "reposterId",
+    COUNT(posts.id) OVER() "tableLength"
+    FROM posts
+    UNION ALL
+    SELECT post, shares."shareTime" AS "postTime", shares."userId" AS "reposterId",
+    COUNT("sharedPosts".id) OVER() "tableLength"
+    FROM posts "sharedPosts"
+    JOIN shares
+    ON shares."postId" = "sharedPosts".id
+    ORDER BY "postTime" DESC
     OFFSET 10*($1-1)
     LIMIT 10
-    ;`,
-    queryParams
-  );
+  ;`;
+
+  return connection.query(queryString, queryParams);
 }
 
 async function setPostMetadata(title, description, image, url) {

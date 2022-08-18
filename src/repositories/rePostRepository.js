@@ -4,29 +4,30 @@ async function getAllRePost(page) {
   const queryParams = [page];
   return connection.query(`
   SELECT 
-    sh."userId" as "reposterId",
+    // sh."userId" as "reposterId",
 	  us.username as "reposterName", 
     p.id, metadatas.url, p.post AS description, p."creatorId", 
     u.username, u."pictureUrl", 
-    COUNT(reactions."postId") AS likes,
-    COUNT(comments."postId") AS comments,
-    COUNT(p.id) OVER() "tableLength",
-    COUNT(sh.id) OVER() "repostsLength",
-    ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
-    ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id ORDER BY users.id ASC) AS "nameWhoLiked",
-    json_build_object(
-      'title', metadatas.title,
-      'image', metadatas.image,
-      'description', metadatas.description,
-      'url', metadatas.url
-    ) AS metadata, sh."shareTime" as "postTime"
-    FROM posts p
-    JOIN users u ON p."creatorId" = u.id
-    JOIN metadatas ON p."metaId" = metadatas.id
+    // COUNT(reactions."postId") AS likes,
+    // COUNT(comments."postId") AS comments,
+    // COUNT(p.id) OVER() "tableLength",
+    // COUNT(sh.id) OVER() "repostsLength",
+    // ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
+    // ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id ORDER BY users.id ASC) AS "nameWhoLiked",
+    // json_build_object(
+    //   'title', metadatas.title,
+    //   'image', metadatas.image,
+    //   'description', metadatas.description,
+    //   'url', metadatas.url
+    // ) AS metadata, 
+    // sh."shareTime" as "postTime"
+    // FROM posts p
+    // JOIN users u ON p."creatorId" = u.id
+    // JOIN metadatas ON p."metaId" = metadatas.id
 	  LEFT JOIN shares sh ON sh."postId" = p.id
-    LEFT JOIN reactions ON reactions."postId" = p.id
+    // LEFT JOIN reactions ON reactions."postId" = p.id
 	  JOIN users us ON us.id = sh."userId"
-    LEFT JOIN comments ON comments."postId" = p.id
+    // LEFT JOIN comments ON comments."postId" = p.id
     GROUP BY p.id, u.id, sh.id, us.id,
     metadatas.url, metadatas.title, metadatas.image, metadatas.description
     ORDER BY "postTime" DESC

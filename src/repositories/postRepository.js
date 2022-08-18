@@ -4,15 +4,53 @@ async function getPosts(page) {
   const queryParams = [page];
   const queryString = `
   SELECT 
-    posts.post, posts."postTime", NULL AS "reposterId",
-    COUNT(posts.id) OVER() "tableLength"
-    FROM posts
+    p.post description, p."postTime", NULL AS "reposterId", NULL AS "reposterName",
+    us.username, us."pictureUrl", 
+    COUNT(p.id) OVER() "tableLength",
+    COUNT(reactions."postId") AS likes,
+    ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
+    ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id ORDER BY users.id ASC) AS "nameWhoLiked",
+    COUNT(comments."postId") AS comments,
+    json_build_object(
+      'title', metadatas.title,
+      'image', metadatas.image,
+      'description', metadatas.description,
+      'url', metadatas.url
+    ) AS metadata
+    FROM posts p
+    JOIN metadatas ON p."metaId" = metadatas.id
+    JOIN users us ON p."creatorId" = us.id
+    LEFT JOIN comments ON comments."postId" = p.id
+    LEFT JOIN reactions ON reactions."postId" = p.id
+    GROUP BY p.id, 
+    metadatas.title, metadatas.image, metadatas.description, metadatas.url,
+    us.username, us."pictureUrl"
     UNION ALL
-    SELECT post, shares."shareTime" AS "postTime", shares."userId" AS "reposterId",
-    COUNT("sharedPosts".id) OVER() "tableLength"
+    SELECT 
+    "sharedPosts".post description, 
+    shares."shareTime" AS "postTime", 
+    shares."userId" AS "reposterId", us.username as "reposterName", 
+    us.username, us."pictureUrl", 
+    COUNT("sharedPosts".id) OVER() "tableLength",
+    COUNT(reactions."postId") AS likes,
+    ARRAY(SELECT "userId" FROM reactions WHERE "postId"="sharedPosts".id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
+    ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"="sharedPosts".id ORDER BY users.id ASC) AS "nameWhoLiked",
+    COUNT(comments."postId") AS comments,
+    json_build_object(
+      'title', metadatas.title,
+      'image', metadatas.image,
+      'description', metadatas.description,
+      'url', metadatas.url
+    ) AS metadata
     FROM posts "sharedPosts"
-    JOIN shares
-    ON shares."postId" = "sharedPosts".id
+    JOIN users us ON "sharedPosts"."creatorId" = us.id
+    JOIN shares ON shares."postId" = "sharedPosts".id
+    JOIN metadatas ON "sharedPosts"."metaId" = metadatas.id
+    LEFT JOIN comments ON comments."postId" = "sharedPosts".id
+    LEFT JOIN reactions ON reactions."postId" = "sharedPosts".id
+    GROUP BY "sharedPosts".id, shares."shareTime", shares."userId", 
+    metadatas.title, metadatas.image, metadatas.description, metadatas.url,
+    us.username, us."pictureUrl"
     ORDER BY "postTime" DESC
     OFFSET 10*($1-1)
     LIMIT 10

@@ -1,6 +1,7 @@
 import postsMetadata from '../handlers/postsHandler.js';
 import { setTrendingQuery, setTrendRelation } from '../repositories/contentRepository.js';
 import { postRepository } from '../repositories/postRepository.js'
+import { rePostRepository } from '../repositories/rePostRepository.js';
 import { trendsRepository } from '../repositories/trendsRepository.js';
 
 async function registerTrend(trendName) {
@@ -92,12 +93,13 @@ export async function post(req, res) {
 
 export async function getPost(req, res) {
   const page = req.query.page
+  let posts = []
   try {
-    const { rows: allPosts } = await postRepository.getPosts(page);
-    
-    res.status(200).send(allPosts);
+    const { rows: allPosts } = await postRepository.getPosts();
+    const { rows: allRepost } = await rePostRepository.getAllRePost();
+    posts = allRepost.concat(allPosts)
+    res.status(200).send(posts);
   } catch(err) {
-    console.log(err);
     res.sendStatus(500);
   }
 }

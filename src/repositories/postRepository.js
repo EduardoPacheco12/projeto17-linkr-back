@@ -94,16 +94,34 @@ async function deletePost(id) {
   return connection.query('DELETE FROM posts WHERE id = $1', [id]);
 }
 
-async function verifyId(id) {
-  return connection.query('SELECT * FROM posts WHERE id = $1', [id]);
+async function verifyPostUser(id, userId) {
+  return connection.query('SELECT * FROM posts WHERE posts.id = $1 AND posts."creatorId" = $2',[Number(id), userId])
 }
 
-async function veridfyPostUser(id, userId) {
-  return connection.query('SELECT * FROM posts WHERE posts.id = $1 AND posts."creatorId" = $2',[Number(id), userId])
+async function verifyPost(postId) {
+  return connection.query('SELECT * FROM posts WHERE id = $1', [postId]);
 }
 
 async function updatePost(id, description) {
   return connection.query('UPDATE posts SET post = $1 WHERE id = $2', [description, Number(id)])
+}
+
+async function getComments(postId) {
+  return connection.query(
+    `SELECT users.username as user, users.id as "userId", posts."creatorId" as "creatorPostId",       comments.text as text, users."pictureUrl" as "pictureUser", comments."commentTime" as "commentTime"
+    FROM comments
+    JOIN users 
+    ON comments."creatorId" = users.id
+    JOIN posts
+    ON comments."postId" = posts.id
+    WHERE comments."postId" = $1
+    ORDER BY "commentTime"
+    ;`, [postId]
+  );
+}
+
+async function postComment(text, creatorId, postId) {
+  return connection.query('INSERT INTO comments (text, "creatorId", "postId") VALUES ($1, $2, $3)', [text, creatorId, postId]);
 }
 
 export const postRepository = {
@@ -113,7 +131,9 @@ export const postRepository = {
     sendPost,
     getPostUserId,
     deletePost,
-    verifyId,
-    veridfyPostUser,
-    updatePost
+    verifyPostUser,
+    verifyPost,
+    updatePost,
+    getComments,
+    postComment
 }

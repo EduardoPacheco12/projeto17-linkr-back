@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
 import  {tokenMatch} from "../handlers/tokenHandler.js";
 
-
 const schema = {
   // joi validations go here
 };

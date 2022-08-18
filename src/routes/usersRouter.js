@@ -4,7 +4,7 @@ import validateToken from "../middlewares/ValidateToken.js";
 
 const router = Router();
 
-router.get("/users", searchUser);
+router.get("/users", validateToken, searchUser);
 router.get("/users/picture", userPicture);
 router.post("/follow/:id", validateToken, followUnfollow);
 router.get("/follow/:id", validateToken, getFollowRelation);

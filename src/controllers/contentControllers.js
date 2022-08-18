@@ -18,8 +18,9 @@ async function getMetadata(posts) {
 
 export async function redirectToHashtag(req, res) {
   try {
+    const page = req.query.page;
     const data = req.params;
-    const { rows: response } = await getContentData(data.id)
+    const { rows: response } = await getContentData(data.id, page)
     const postsWithMetadata = await getMetadata(response);
     res.status(200).send(postsWithMetadata);
     return;

@@ -25,14 +25,15 @@ export async function getContentQuery({ data }) {
   return connection.query(queryString, queryData);
 }
 
-export async function getContentData(name) {
+export async function getContentData(name, page) {
   
-  const queryData = [name];
+  const queryParams = [name, page];
   const queryString = `
     SELECT 
       p.id, metadatas.url, p.post AS description,
       u.username, u."pictureUrl", p."creatorId", 
       COUNT(reactions."postId") AS likes,
+      COUNT(p.id) OVER() "tableLength",
       ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id) AS "usersWhoLiked",
       ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id) AS "nameWhoLiked"
     FROM posts p 
@@ -47,9 +48,10 @@ export async function getContentData(name) {
     GROUP BY p.id, metadatas.url, p.post,
     u.username, u."pictureUrl", p."creatorId" 
     ORDER BY p."postTime" DESC 
-    LIMIT 20
+    OFFSET 10*($2-1)
+    LIMIT 10
   ;`;
-  return connection.query(queryString, queryData)
+  return connection.query(queryString, queryParams)
 }
 
 export async function setTrendingQuery(queryData) {

@@ -92,14 +92,13 @@ export async function post(req, res) {
 }
 
 export async function getPost(req, res) {
+  const page = req.query.page
   let posts = []
-
   try {
     const { rows: allPosts } = await postRepository.getPosts();
-    const { rows:allRepost} = await rePostRepository.getAllRePost();
+    const { rows: allRepost } = await rePostRepository.getAllRePost();
     posts = allRepost.concat(allPosts)
     res.status(200).send(posts);
-
   } catch(err) {
     res.sendStatus(500);
   }
@@ -107,12 +106,12 @@ export async function getPost(req, res) {
 
 export async function getPostUser(req, res) {
   const { userid } = req.params;
-
+  const page = req.query.page
   try {
-    const { rows:userData } = await postRepository.getPostUserId(userid);
+    const { rows:userData } = await postRepository.getPostUserId(userid, page);
 
     if(userData.length === 0) return res.sendStatus(404);
-
+    console.log(userData);
     res.status(200).send(userData);
   } catch(err) {
     res.sendStatus(500);

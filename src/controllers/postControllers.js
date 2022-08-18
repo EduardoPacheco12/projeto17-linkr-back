@@ -93,13 +93,19 @@ export async function post(req, res) {
 
 export async function getPost(req, res) {
   const page = req.query.page
-  let posts = []
   try {
-    const { rows: allPosts } = await postRepository.getPosts();
-    const { rows: allRepost } = await rePostRepository.getAllRePost();
-    posts = allRepost.concat(allPosts)
-    res.status(200).send(posts);
+    const { rows: response } = await postRepository.getPosts(page);
+    const lengths = [...new Set(response.map(p => p.tableLength))]
+    if(lengths.length === 1) {
+      response.map(p => p.tableLength = 2*lengths[0])
+    } else {
+      const newTableLength = lengths.reduce((previousValue, currentValue) => Number(previousValue) + Number(currentValue), 0);
+      response.map(p => p.tableLength = newTableLength)
+    }
+    console.log(response);
+    res.status(200).send(response);
   } catch(err) {
+    console.log(err);
     res.sendStatus(500);
   }
 }

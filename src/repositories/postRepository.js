@@ -4,8 +4,8 @@ async function getPosts(page) {
   const queryParams = [page];
   const queryString = `
   SELECT 
-    p.id, p.post description, p."postTime", NULL AS "reposterId", NULL AS "reposterName",
-    us.username, us."pictureUrl", 
+    p.id, p.post description, p."postTime", p."creatorId",
+    NULL AS "reposterId", NULL AS "reposterName",us.username, us."pictureUrl", 
     COUNT(p.id) OVER() "tableLength",
     COUNT(reactions."postId") AS likes,
     ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
@@ -28,7 +28,7 @@ async function getPosts(page) {
     UNION ALL
     SELECT 
     "sharedPosts".id, "sharedPosts".post description, 
-    shares."shareTime" AS "postTime", 
+    shares."shareTime" AS "postTime", "sharedPosts"."creatorId",
     shares."userId" AS "reposterId", us.username as "reposterName", 
     us.username, us."pictureUrl", 
     COUNT("sharedPosts".id) OVER() "tableLength",

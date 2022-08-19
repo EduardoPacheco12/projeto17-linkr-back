@@ -167,10 +167,9 @@ export async function getComments(req, res) {
   const { postId } = req.params;
 
   try {
-    const { rows: comments } = await postRepository.getComments(postId);
+    const { rows: comments } = await postRepository.getComments(userId, postId);
     res.status(200).send(comments);
   } catch (error) {
-    console.log(error);
     res.status(500).send(error);
   }
 }

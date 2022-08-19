@@ -50,17 +50,17 @@ function setSchema(objectData) {
 export async function tokenValidation(req, res, next) {
   const { authorization } = req.headers;
   if(!authorization) {
-      return res.sendStatus(401);
+    return res.sendStatus(401);
   }
 
   const token = authorization?.replace('Bearer ', '');
   jwt.verify(token, process.env.PRIVATE_KEY_JWT, function(err, decoded) {
-      if (err) {
-          return res.sendStatus(401);
-      }
+    if (err) {
+      return res.sendStatus(401);
+    }
 
-      res.locals.userId = decoded.id;
-      next();
+    res.locals.userId = decoded.id;
+    next();
   });
 
 }

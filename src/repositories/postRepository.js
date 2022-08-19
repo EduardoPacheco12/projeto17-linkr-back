@@ -147,18 +147,22 @@ async function updatePost(id, description) {
 }
 
 async function getComments(postId) {
-  return connection.query(
-    `SELECT users.username as user, users.id as "userId", posts."creatorId" as "creatorPostId",       comments.text as text, users."pictureUrl" as "pictureUser", comments."commentTime" as "commentTime"
-    FROM comments
-    JOIN users 
-    ON comments."creatorId" = users.id
-    JOIN posts
-    ON comments."postId" = posts.id
-    WHERE comments."postId" = $1
-    ORDER BY "commentTime"
-    ;`,
-    [postId]
-  );
+  const queryString = `
+  SELECT 
+  users.username AS user, 
+  users.id as "userId", users."pictureUrl" as "pictureUser", 
+  posts."creatorId" as "creatorPostId", 
+  comments.text as text, comments."commentTime" as "commentTime", 
+  ARRAY (SELECT followed FROM relations WHERE posts."creatorId"=follower) AS follows 
+  FROM comments 
+  JOIN users 
+  ON comments."creatorId" = users.id
+  JOIN posts
+  ON comments."postId" = posts.id
+  WHERE comments."postId" = $1
+  ORDER BY "commentTime" ASC
+  ;`;
+  return connection.query(queryString, [postId]);
 }
 
 async function postComment(text, creatorId, postId) {

@@ -191,7 +191,7 @@ export async function getQtdNewPosts(req, res) {
   const { userId } = res.locals;
   const body = req.body;
   const postTime = new Date(body.lastPostTime).getTime() + 1000;
-  const postTimeDate = new Date(time);
+  const postTimeDate = new Date(postTime);
 
   try{
     const { error } = postTimeSchema.validate(body);

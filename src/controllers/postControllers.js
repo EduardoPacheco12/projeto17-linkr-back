@@ -102,7 +102,6 @@ export async function getPost(req, res) {
       const newTableLength = lengths.reduce((previousValue, currentValue) => Number(previousValue) + Number(currentValue), 0);
       response.map(p => p.tableLength = newTableLength)
     }
-    console.log(response);
     res.status(200).send(response);
   } catch(err) {
     console.log(err);
@@ -119,6 +118,7 @@ export async function getPostUser(req, res) {
     if(userData.length === 0) return res.sendStatus(404);
     res.status(200).send(userData);
   } catch(err) {
+    console.log(err);
     res.sendStatus(500);
   }
 }

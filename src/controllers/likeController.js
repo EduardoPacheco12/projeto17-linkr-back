@@ -39,7 +39,7 @@ const addOrRemoveLike = async (req, res) => {
     res.sendStatus(201);
 
   } catch (err) {
-    // console.log(err);
+    console.log(err);
     res.sendStatus(500);
   }
 }

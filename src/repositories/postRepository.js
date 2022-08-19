@@ -1,7 +1,7 @@
 import connection from "../databases/postgres.js";
 
-async function getPosts(page) {
-  const queryParams = [page];
+async function getPosts(page, userId) {
+  const queryParams = [page, userId];
   const queryString = `
   SELECT 
     p.id, p."creatorId", p.post description, p."postTime", NULL AS "reposterId", NULL AS "reposterName",
@@ -17,18 +17,20 @@ async function getPosts(page) {
       'description', metadatas.description,
       'url', metadatas.url
     ) AS metadata
-    FROM posts p
-    JOIN metadatas ON p."metaId" = metadatas.id
-    JOIN users us ON p."creatorId" = us.id
-    LEFT JOIN comments ON comments."postId" = p.id
-    LEFT JOIN reactions ON reactions."postId" = p.id
-    GROUP BY p.id, 
-    metadatas.id,
-    us.username, us."pictureUrl"
-    UNION ALL
-    SELECT 
-    "sharedPosts".id, "sharedPosts"."creatorId", "sharedPosts".post description, 
-    shares."shareTime" AS "postTime", 
+  FROM posts p
+  JOIN metadatas ON p."metaId" = metadatas.id
+  JOIN users us ON p."creatorId" = us.id
+  RIGHT JOIN relations ON relations."followed" = us.id OR relations.follower = us.id
+  LEFT JOIN comments ON comments."postId" = p.id
+  LEFT JOIN reactions ON reactions."postId" = p.id
+  WHERE relations.follower = $2 OR p."creatorId" = $2
+  GROUP BY p.id, 
+  metadatas.id,
+  us.username, us."pictureUrl"
+  UNION ALL
+  SELECT 
+    "sharedPosts".id, "sharedPosts"."creatorId",
+    "sharedPosts".post description, shares."shareTime" AS "postTime", 
     shares."userId" AS "reposterId", us.username as "reposterName", 
     us.username, us."pictureUrl", 
     COUNT("sharedPosts".id) OVER() "tableLength",
@@ -42,19 +44,22 @@ async function getPosts(page) {
       'description', metadatas.description,
       'url', metadatas.url
     ) AS metadata
-    FROM posts "sharedPosts"
-    JOIN users us ON "sharedPosts"."creatorId" = us.id
-    JOIN shares ON shares."postId" = "sharedPosts".id
-    JOIN metadatas ON "sharedPosts"."metaId" = metadatas.id
-    LEFT JOIN comments ON comments."postId" = "sharedPosts".id
-    LEFT JOIN reactions ON reactions."postId" = "sharedPosts".id
-    GROUP BY "sharedPosts".id, shares."shareTime", shares."userId", 
-    metadatas.id,
-    us.username, us."pictureUrl"
-    ORDER BY "postTime" DESC
-    OFFSET 10*($1-1)
-    LIMIT 10
-  ;`;
+  FROM posts "sharedPosts"
+  JOIN users us ON "sharedPosts"."creatorId" = us.id
+  JOIN shares ON shares."postId" = "sharedPosts".id
+  JOIN metadatas ON "sharedPosts"."metaId" = metadatas.id
+  JOIN relations ON relations."followed" = shares."userId" OR relations.follower = shares."userId"
+  LEFT JOIN comments ON comments."postId" = "sharedPosts".id
+  LEFT JOIN reactions ON reactions."postId" = "sharedPosts".id
+  WHERE relations.follower = $2 OR shares."userId" = $2
+  GROUP BY "sharedPosts".id, shares."shareTime", shares."userId", 
+  metadatas.title, metadatas.image, metadatas.description, metadatas.url,
+  us.username, us."pictureUrl"
+  ORDER BY "postTime" DESC
+  OFFSET 10*($1-1)
+  LIMIT 10;
+  `;
+
   return connection.query(queryString, queryParams);
 }
 
@@ -108,7 +113,7 @@ async function getPostUserId(userId, page) {
   ) AS metadata
   FROM posts p
   JOIN metadatas ON p."metaId" = metadatas.id
-  JOIN users us ON p."creatorId" = us.id
+  RIGHT JOIN users us ON p."creatorId" = us.id
   LEFT JOIN comments ON comments."postId" = p.id
   LEFT JOIN reactions ON reactions."postId" = p.id
   WHERE us.id=$1

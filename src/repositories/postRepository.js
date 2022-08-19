@@ -123,7 +123,7 @@ async function getPostUserId(userId, page) {
   WHERE us.id=$1 
   GROUP BY us.id, p.id, metadatas.id 
   OFFSET 10*($2-1) 
-  LIMIT 10 
+  LIMIT 10
   ;`;
   return connection.query(queryString, queryParams);
 }
@@ -176,6 +176,68 @@ async function postComment(text, creatorId, postId) {
   );
 }
 
+async function getNewPosts(userId, lastPostTime) {
+  return connection.query(
+    `
+    SELECT 
+    p.id, p."creatorId", p.post AS description, p."postTime", NULL AS "reposterId", NULL AS "reposterName",
+    us.username, us."pictureUrl", 
+    COUNT(p.id) OVER() "tableLength",
+    COUNT(reactions."postId") AS likes,
+    ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
+    ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id ORDER BY users.id ASC) AS "nameWhoLiked",
+    COUNT(comments."postId") AS comments,
+    json_build_object(
+      'title', metadatas.title,
+      'image', metadatas.image,
+      'description', metadatas.description,
+      'url', metadatas.url
+    ) AS metadata
+  FROM posts p
+  JOIN metadatas ON p."metaId" = metadatas.id
+  JOIN users us ON p."creatorId" = us.id
+  RIGHT JOIN relations ON relations."followed" = us.id OR relations.follower = us.id
+  LEFT JOIN comments ON comments."postId" = p.id
+  LEFT JOIN reactions ON reactions."postId" = p.id
+  WHERE (relations.follower = $1 OR p."creatorId" = $1) AND "postTime" > $2
+  GROUP BY p.id, 
+  metadatas.id,
+  us.username, us."pictureUrl"
+  UNION ALL
+  SELECT 
+    "sharedPosts".id,"sharedPosts"."creatorId",
+	"sharedPosts".post AS description, 
+    shares."shareTime" AS "postTime", 
+    shares."userId" AS "reposterId", us.username as "reposterName", 
+    us.username, us."pictureUrl", 
+    COUNT("sharedPosts".id) OVER() "tableLength",
+    COUNT(reactions."postId") AS likes,
+    ARRAY(SELECT "userId" FROM reactions WHERE "postId"="sharedPosts".id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
+    ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"="sharedPosts".id ORDER BY users.id ASC) AS "nameWhoLiked",
+    COUNT(comments."postId") AS comments,
+    json_build_object(
+      'title', metadatas.title,
+      'image', metadatas.image,
+      'description', metadatas.description,
+      'url', metadatas.url
+    ) AS metadata
+  FROM posts "sharedPosts"
+  JOIN users us ON "sharedPosts"."creatorId" = us.id
+  JOIN shares ON shares."postId" = "sharedPosts".id
+  JOIN metadatas ON "sharedPosts"."metaId" = metadatas.id
+  JOIN relations ON relations."followed" = shares."userId" OR relations.follower = shares."userId"
+  LEFT JOIN comments ON comments."postId" = "sharedPosts".id
+  LEFT JOIN reactions ON reactions."postId" = "sharedPosts".id
+  WHERE (relations.follower = $1 OR shares."userId" = $1) AND shares."shareTime" > $2
+  GROUP BY "sharedPosts".id, shares."shareTime", shares."userId", 
+  metadatas.title, metadatas.image, metadatas.description, metadatas.url,
+  us.username, us."pictureUrl"
+  ORDER BY "postTime" DESC;
+  `,
+  [ userId, lastPostTime]
+  )
+}
+
 export const postRepository = {
   getPosts,
   setPostMetadata,
@@ -188,4 +250,5 @@ export const postRepository = {
   updatePost,
   getComments,
   postComment,
+  getNewPosts
 };

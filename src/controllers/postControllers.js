@@ -2,6 +2,7 @@ import postsMetadata from '../handlers/postsHandler.js';
 import { setTrendingQuery, setTrendRelation } from '../repositories/contentRepository.js';
 import { postRepository } from '../repositories/postRepository.js';
 import { trendsRepository } from '../repositories/trendsRepository.js';
+import postTimeSchema from "../schemas/postTimeSchema.js";
 
 async function registerTrend(trendName) {
   const { rows: registeredTrend } = await trendsRepository.getTrends(trendName);
@@ -183,5 +184,24 @@ export async function postComments(req, res) {
     res.sendStatus(201);
   } catch (error) {
     res.status(500).send(error);
+  }
+}
+
+export async function getQtdNewPosts(req, res) {
+  const { userId } = res.locals;
+  const body = req.body;
+  const postTime = new Date(body.lastPostTime).getTime() + 1000;
+  const postTimeDate = new Date(time);
+
+  try{
+    const { error } = postTimeSchema.validate(body);
+
+    if(error) return res.sendStatus(422);
+
+    const { rows: newPosts } = await postRepository.getNewPosts(userId, postTimeDate);
+
+    res.status(200).send({ qtdNewPosts: newPosts.length });
+  } catch(err) {
+    res.sendStatus(500);
   }
 }

@@ -1,6 +1,18 @@
 import { Router } from "express";
-import { getPost, post, getPostUser, deletePost, updatePost, getComments, postComments } from "../controllers/postControllers.js";
-import { deleteUpdatePostMiddleware, getCommentsMiddleware, postCommentMiddleware, PostMiddleware } from "../middlewares/postMiddleware.js";
+import {
+  getPost,
+  post,
+  getPostUser,
+  deletePost,
+  updatePost,
+  getComments,
+  postComments,
+  getQtdNewPosts } from "../controllers/postControllers.js";
+import {
+  deleteUpdatePostMiddleware,
+  getCommentsMiddleware,
+  postCommentMiddleware,
+  PostMiddleware } from "../middlewares/postMiddleware.js";
 import { tokenValidation } from "../middlewares/tokenValidation.js";
 import trendSelector from "../middlewares/trendSelector.js";
 import validateToken from "../middlewares/ValidateToken.js";
@@ -13,5 +25,6 @@ router.get("/comments/:postId", tokenValidation, getCommentsMiddleware , getComm
 router.post("/comments/:postId", tokenValidation, postCommentMiddleware, postComments);
 router.delete("/posts/:id", tokenValidation, deleteUpdatePostMiddleware, deletePost);
 router.patch("/posts/:id", tokenValidation, trendSelector, deleteUpdatePostMiddleware, updatePost);
+router.post("/qtd-new-posts", validateToken, getQtdNewPosts);
 
 export default router;

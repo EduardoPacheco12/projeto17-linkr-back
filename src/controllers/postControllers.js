@@ -117,7 +117,6 @@ export async function getPostUser(req, res) {
     const { rows:userData } = await postRepository.getPostUserId(userid, page);
 
     if(userData.length === 0) return res.sendStatus(404);
-    console.log(userData);
     res.status(200).send(userData);
   } catch(err) {
     res.sendStatus(500);

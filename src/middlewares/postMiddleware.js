@@ -56,7 +56,7 @@ export async function postCommentMiddleware(req, res, next) {
 
   const { error } = commentSchema.validate(body, { abortEarly: false });
   if(error) {
-    res.status(422).send(error.details);
+    return res.status(422).send(error.details);
   }
 
   const { rows: verifyPost } = await postRepository.verifyPost(postId);

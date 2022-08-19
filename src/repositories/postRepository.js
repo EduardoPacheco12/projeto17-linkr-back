@@ -23,8 +23,8 @@ async function getPosts(page) {
     LEFT JOIN comments ON comments."postId" = p.id
     LEFT JOIN reactions ON reactions."postId" = p.id
     GROUP BY p.id, 
-    metadatas.title, metadatas.image, metadatas.description, metadatas.url,
-    us.username, us."pictureUrl", p."creatorId"
+    metadatas.id,
+    us.username, us."pictureUrl"
     UNION ALL
     SELECT 
     "sharedPosts".id, "sharedPosts".post description, 
@@ -49,13 +49,12 @@ async function getPosts(page) {
     LEFT JOIN comments ON comments."postId" = "sharedPosts".id
     LEFT JOIN reactions ON reactions."postId" = "sharedPosts".id
     GROUP BY "sharedPosts".id, shares."shareTime", shares."userId", 
-    metadatas.title, metadatas.image, metadatas.description, metadatas.url,
+    metadatas.id,
     us.username, us."pictureUrl"
     ORDER BY "postTime" DESC
     OFFSET 10*($1-1)
     LIMIT 10
   ;`;
-
   return connection.query(queryString, queryParams);
 }
 
@@ -91,37 +90,33 @@ async function sendPost(queryData) {
 }
 
 async function getPostUserId(userId, page) {
-  const queryParams = [userId, page]
-  return connection.query(
-    `
-    SELECT users.username, users."pictureUrl", users.id AS "creatorId",
-    p.id, p.post AS description, metadatas.url,
-    COUNT(reactions."postId") AS likes,
-    COUNT(p.id) OVER() "tableLength",
-    ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
-    ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id ORDER BY users.id ASC) AS "nameWhoLiked",
-    json_build_object(
-      'title', metadatas.title,
-      'image', metadatas.image,
-      'description', metadatas.description,
-      'url', metadatas.url
-    ) AS metadata
-    FROM users
-    LEFT JOIN posts p
-    ON users.id = p."creatorId"
-    LEFT JOIN metadatas
-    ON p."metaId" = metadatas.id
-    LEFT JOIN reactions 
-    ON reactions."postId" = p.id
-    WHERE users.id = $1
-    GROUP BY users.id, p.id,
-    metadatas.url, metadatas.title, metadatas.image, metadatas.description
-    ORDER BY p.id DESC
-    OFFSET 10*($2-1)
-    LIMIT 10;
-    `,
-    queryParams
-  );
+  const queryParams = [userId, page];
+  const queryString = `
+  SELECT 
+  p.id, p.post description, p."postTime",
+  us.id "userId", us.username, us."pictureUrl", 
+  COUNT(p.id) OVER() "tableLength", 
+  COUNT(reactions."postId") AS likes, 
+  ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
+  ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id ORDER BY users.id ASC) AS "nameWhoLiked",
+  COUNT(comments."postId") AS comments,
+  json_build_object(
+    'title', metadatas.title,
+    'image', metadatas.image,
+    'description', metadatas.description,
+    'url', metadatas.url
+  ) AS metadata
+  FROM posts p
+  JOIN metadatas ON p."metaId" = metadatas.id
+  JOIN users us ON p."creatorId" = us.id
+  LEFT JOIN comments ON comments."postId" = p.id
+  LEFT JOIN reactions ON reactions."postId" = p.id
+  WHERE us.id=$1
+  GROUP BY us.id, p.id, metadatas.id 
+  OFFSET 10*($2-1)
+  LIMIT 10
+  ;`;
+  return connection.query(queryString, queryParams);
 }
 
 async function deletePost(id) {

@@ -118,6 +118,7 @@ export async function getPostUser(req, res) {
     if(userData.length === 0) return res.sendStatus(404);
     res.status(200).send(userData);
   } catch(err) {
+    console.log(err);
     res.sendStatus(500);
   }
 }

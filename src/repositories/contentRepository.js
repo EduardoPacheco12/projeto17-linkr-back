@@ -34,6 +34,7 @@ export async function getContentData(name, page) {
       u.username, u."pictureUrl", p."creatorId", 
       COUNT(reactions."postId") AS likes,
       COUNT(p.id) OVER() "tableLength",
+      COUNT(comments."postId") AS comments,
       ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id) AS "usersWhoLiked",
       ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id) AS "nameWhoLiked",
       json_build_object(
@@ -43,14 +44,11 @@ export async function getContentData(name, page) {
         'url', metadatas.url
       ) AS metadata
     FROM posts p 
-    JOIN users u 
-    ON p."creatorId" = u.id 
-    LEFT JOIN reactions 
-    ON reactions."postId" = p.id
-    LEFT JOIN metadatas
-    ON metadatas.id = p."metaId"
-    JOIN trends tr 
-    ON tr."postId"=p.id WHERE tr."trendId"=(SELECT id FROM trendings WHERE name=$1)
+    JOIN users u ON p."creatorId" = u.id 
+    LEFT JOIN reactions ON reactions."postId" = p.id
+    LEFT JOIN metadatas ON metadatas.id = p."metaId"
+    LEFT JOIN comments ON comments."postId" = p.id
+    JOIN trends tr ON tr."postId"=p.id WHERE tr."trendId"=(SELECT id FROM trendings WHERE name=$1)
     GROUP BY p.id, metadatas.url, p.post,
     u.username, u."pictureUrl", p."creatorId",
     metadatas.title, metadatas.image, metadatas.description

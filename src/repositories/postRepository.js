@@ -19,12 +19,12 @@ async function getPosts(page, userId) {
       'url', metadatas.url
     ) AS metadata
   FROM posts p
-  JOIN metadatas ON p."metaId" = metadatas.id
-  JOIN users us ON p."creatorId" = us.id
-  JOIN shares ON shares."postId" = p.id
-  JOIN relations ON relations."followed" = us.id OR relations.follower = us.id
-  JOIN comments ON comments."postId" = p.id
-  JOIN reactions ON reactions."postId" = p.id
+  LEFT OUTER JOIN metadatas ON p."metaId" = metadatas.id
+  LEFT OUTER JOIN users us ON p."creatorId" = us.id
+  LEFT OUTER JOIN shares ON shares."postId" = p.id
+  LEFT OUTER JOIN relations ON relations."followed" = us.id OR relations.follower = us.id
+  LEFT OUTER JOIN comments ON comments."postId" = p.id
+  LEFT OUTER JOIN reactions ON reactions."postId" = p.id
   WHERE relations.follower = $2 OR p."creatorId" = $2
   GROUP BY p.id, 
   metadatas.id,
@@ -48,12 +48,12 @@ async function getPosts(page, userId) {
       'url', metadatas.url
     ) AS metadata
   FROM posts "sharedPosts"
-  JOIN users us ON "sharedPosts"."creatorId" = us.id
-  JOIN shares ON shares."postId" = "sharedPosts".id
-  JOIN metadatas ON "sharedPosts"."metaId" = metadatas.id
-  JOIN relations ON relations."followed" = shares."userId" OR relations.follower = shares."userId"
-  JOIN comments ON comments."postId" = "sharedPosts".id
-  JOIN reactions ON reactions."postId" = "sharedPosts".id
+  LEFT OUTER JOIN users us ON "sharedPosts"."creatorId" = us.id
+  LEFT OUTER JOIN shares ON shares."postId" = "sharedPosts".id
+  LEFT OUTER JOIN metadatas ON "sharedPosts"."metaId" = metadatas.id
+  LEFT OUTER JOIN relations ON relations."followed" = shares."userId" OR relations.follower = shares."userId"
+  LEFT OUTER JOIN comments ON comments."postId" = "sharedPosts".id
+  LEFT OUTER JOIN reactions ON reactions."postId" = "sharedPosts".id
   WHERE relations.follower = $2 OR shares."userId" = $2
   GROUP BY "sharedPosts".id, shares."shareTime", shares."userId", 
   metadatas.title, metadatas.image, metadatas.description, metadatas.url,

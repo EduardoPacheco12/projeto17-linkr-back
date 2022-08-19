@@ -9,6 +9,7 @@ async function getPosts(page, userId) {
     COUNT(p.id) OVER() "tableLength",
     COALESCE(COUNT(distinct(reactions.id)), 0) AS likes,
     COALESCE(COUNT(distinct(comments.id)), 0) AS comments,
+    COALESCE(COUNT(distinct(shares.id)), 0) AS shares,
     ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
     ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id ORDER BY users.id ASC) AS "nameWhoLiked",
     json_build_object(
@@ -20,6 +21,7 @@ async function getPosts(page, userId) {
   FROM posts p
   JOIN metadatas ON p."metaId" = metadatas.id
   JOIN users us ON p."creatorId" = us.id
+  JOIN shares ON shares."postId" = p.id
   RIGHT JOIN relations ON relations."followed" = us.id OR relations.follower = us.id
   JOIN comments ON comments."postId" = p.id
   JOIN reactions ON reactions."postId" = p.id
@@ -36,6 +38,7 @@ async function getPosts(page, userId) {
     COUNT("sharedPosts".id) OVER() "tableLength",
     COALESCE(COUNT(distinct(reactions.id)), 0) AS likes,
     COALESCE(COUNT(distinct(comments.id)), 0) AS comments,
+    COALESCE(COUNT(distinct(shares.id)), 0) AS shares,
     ARRAY(SELECT "userId" FROM reactions WHERE "postId"="sharedPosts".id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
     ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"="sharedPosts".id ORDER BY users.id ASC) AS "nameWhoLiked",
     json_build_object(
@@ -100,25 +103,27 @@ async function getPostUserId(userId, page) {
   p.id, p."creatorId", p.post description, p."postTime",
   us.id "userId", us.username, us."pictureUrl", 
   COUNT(p.id) OVER() "tableLength", 
-  COUNT(reactions."postId") AS likes, 
+  COALESCE(COUNT(distinct(reactions.id)), 0) AS likes, 
+  COALESCE(COUNT(distinct(comments.id)), 0) AS comments,
+  COALESCE(COUNT(distinct(shares.id)), 0) AS shares,
   ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
   ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id ORDER BY users.id ASC) AS "nameWhoLiked",
-  COUNT(comments."postId") AS comments,
-  json_build_object(
-    'title', metadatas.title,
-    'image', metadatas.image,
-    'description', metadatas.description,
-    'url', metadatas.url
-  ) AS metadata
-  FROM posts p
-  JOIN metadatas ON p."metaId" = metadatas.id
-  RIGHT JOIN users us ON p."creatorId" = us.id
-  LEFT JOIN comments ON comments."postId" = p.id
-  LEFT JOIN reactions ON reactions."postId" = p.id
-  WHERE us.id=$1
+  json_build_object( 
+    'title', metadatas.title, 
+    'image', metadatas.image, 
+    'description', metadatas.description, 
+    'url', metadatas.url 
+  ) AS metadata 
+  FROM posts p 
+  FULL OUTER JOIN metadatas ON p."metaId" = metadatas.id 
+  FULL OUTER JOIN users us ON p."creatorId" = us.id 
+  FULL OUTER JOIN comments ON comments."postId" = p.id 
+  FULL OUTER JOIN reactions ON reactions."postId" = p.id 
+  FULL OUTER JOIN shares ON shares."postId" = p.id 
+  WHERE us.id=$1 
   GROUP BY us.id, p.id, metadatas.id 
-  OFFSET 10*($2-1)
-  LIMIT 10
+  OFFSET 10*($2-1) 
+  LIMIT 10 
   ;`;
   return connection.query(queryString, queryParams);
 }

@@ -22,7 +22,7 @@ async function getPosts(page, userId) {
   JOIN metadatas ON p."metaId" = metadatas.id
   JOIN users us ON p."creatorId" = us.id
   JOIN shares ON shares."postId" = p.id
-  RIGHT JOIN relations ON relations."followed" = us.id OR relations.follower = us.id
+  JOIN relations ON relations."followed" = us.id OR relations.follower = us.id
   JOIN comments ON comments."postId" = p.id
   JOIN reactions ON reactions."postId" = p.id
   WHERE relations.follower = $2 OR p."creatorId" = $2

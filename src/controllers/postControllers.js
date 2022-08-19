@@ -1,7 +1,6 @@
 import postsMetadata from '../handlers/postsHandler.js';
 import { setTrendingQuery, setTrendRelation } from '../repositories/contentRepository.js';
-import { postRepository } from '../repositories/postRepository.js'
-import { rePostRepository } from '../repositories/rePostRepository.js';
+import { postRepository } from '../repositories/postRepository.js';
 import { trendsRepository } from '../repositories/trendsRepository.js';
 
 async function registerTrend(trendName) {
@@ -92,9 +91,10 @@ export async function post(req, res) {
 }
 
 export async function getPost(req, res) {
+  const { userId } = res.locals;
   const page = req.query.page
   try {
-    const { rows: response } = await postRepository.getPosts(page);
+    const { rows: response } = await postRepository.getPosts(page, userId);
     const lengths = [...new Set(response.map(p => p.tableLength))]
     if(lengths.length === 1) {
       response.map(p => p.tableLength = 2*lengths[0])
@@ -112,10 +112,18 @@ export async function getPost(req, res) {
 export async function getPostUser(req, res) {
   const { userid } = req.params;
   const page = req.query.page
+
   try {
     const { rows:userData } = await postRepository.getPostUserId(userid, page);
 
-    if(userData.length === 0) return res.sendStatus(404);
+    const lengths = [...new Set(userData.map(p => p.tableLength))]
+    if(lengths.length === 1) {
+      userData.map(p => p.tableLength = 2*lengths[0])
+    } else {
+      const newTableLength = lengths.reduce((previousValue, currentValue) => Number(previousValue) + Number(currentValue), 0);
+      userData.map(p => p.tableLength = newTableLength)
+    }
+
     res.status(200).send(userData);
   } catch(err) {
     console.log(err);

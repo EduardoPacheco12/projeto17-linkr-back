@@ -102,7 +102,6 @@ export async function getPost(req, res) {
       const newTableLength = lengths.reduce((previousValue, currentValue) => Number(previousValue) + Number(currentValue), 0);
       response.map(p => p.tableLength = newTableLength)
     }
-    console.log(response);
     res.status(200).send(response);
   } catch(err) {
     console.log(err);

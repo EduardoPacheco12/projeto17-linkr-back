@@ -19,8 +19,8 @@ async function getPosts(page, userId) {
       'url', metadatas.url
     ) AS metadata
   FROM posts p
-  LEFT OUTER JOIN metadatas ON p."metaId" = metadatas.id
-  LEFT OUTER JOIN users us ON p."creatorId" = us.id
+  JOIN metadatas ON p."metaId" = metadatas.id
+  JOIN users us ON p."creatorId" = us.id
   LEFT OUTER JOIN shares ON shares."postId" = p.id
   LEFT OUTER JOIN relations ON relations."followed" = us.id OR relations.follower = us.id
   LEFT OUTER JOIN comments ON comments."postId" = p.id
@@ -48,9 +48,9 @@ async function getPosts(page, userId) {
       'url', metadatas.url
     ) AS metadata
   FROM posts "sharedPosts"
-  LEFT OUTER JOIN users us ON "sharedPosts"."creatorId" = us.id
+  JOIN users us ON "sharedPosts"."creatorId" = us.id
+  JOIN metadatas ON "sharedPosts"."metaId" = metadatas.id
   LEFT OUTER JOIN shares ON shares."postId" = "sharedPosts".id
-  LEFT OUTER JOIN metadatas ON "sharedPosts"."metaId" = metadatas.id
   LEFT OUTER JOIN relations ON relations."followed" = shares."userId" OR relations.follower = shares."userId"
   LEFT OUTER JOIN comments ON comments."postId" = "sharedPosts".id
   LEFT OUTER JOIN reactions ON reactions."postId" = "sharedPosts".id

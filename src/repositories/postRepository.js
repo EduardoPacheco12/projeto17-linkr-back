@@ -7,10 +7,10 @@ async function getPosts(page, userId) {
     p.id, p."creatorId", p.post description, p."postTime", NULL AS "reposterId", NULL AS "reposterName",
     us.username, us."pictureUrl", 
     COUNT(p.id) OVER() "tableLength",
-    COUNT(reactions."postId") AS likes,
+    COALESCE(COUNT(distinct(reactions.id)), 0) AS likes,
+    COALESCE(COUNT(distinct(comments.id)), 0) AS comments,
     ARRAY(SELECT "userId" FROM reactions WHERE "postId"=p.id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
     ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"=p.id ORDER BY users.id ASC) AS "nameWhoLiked",
-    COUNT(comments."postId") AS comments,
     json_build_object(
       'title', metadatas.title,
       'image', metadatas.image,
@@ -21,8 +21,8 @@ async function getPosts(page, userId) {
   JOIN metadatas ON p."metaId" = metadatas.id
   JOIN users us ON p."creatorId" = us.id
   RIGHT JOIN relations ON relations."followed" = us.id OR relations.follower = us.id
-  LEFT JOIN comments ON comments."postId" = p.id
-  LEFT JOIN reactions ON reactions."postId" = p.id
+  JOIN comments ON comments."postId" = p.id
+  JOIN reactions ON reactions."postId" = p.id
   WHERE relations.follower = $2 OR p."creatorId" = $2
   GROUP BY p.id, 
   metadatas.id,
@@ -34,10 +34,10 @@ async function getPosts(page, userId) {
     shares."userId" AS "reposterId", us.username as "reposterName", 
     us.username, us."pictureUrl", 
     COUNT("sharedPosts".id) OVER() "tableLength",
-    COUNT(reactions."postId") AS likes,
+    COALESCE(COUNT(distinct(reactions.id)), 0) AS likes,
+    COALESCE(COUNT(distinct(comments.id)), 0) AS comments,
     ARRAY(SELECT "userId" FROM reactions WHERE "postId"="sharedPosts".id ORDER BY "userId" ASC) AS "usersWhoLiked" ,
     ARRAY(SELECT users.username FROM reactions JOIN users ON users.id = reactions."userId" WHERE "postId"="sharedPosts".id ORDER BY users.id ASC) AS "nameWhoLiked",
-    COUNT(comments."postId") AS comments,
     json_build_object(
       'title', metadatas.title,
       'image', metadatas.image,
@@ -49,8 +49,8 @@ async function getPosts(page, userId) {
   JOIN shares ON shares."postId" = "sharedPosts".id
   JOIN metadatas ON "sharedPosts"."metaId" = metadatas.id
   JOIN relations ON relations."followed" = shares."userId" OR relations.follower = shares."userId"
-  LEFT JOIN comments ON comments."postId" = "sharedPosts".id
-  LEFT JOIN reactions ON reactions."postId" = "sharedPosts".id
+  JOIN comments ON comments."postId" = "sharedPosts".id
+  JOIN reactions ON reactions."postId" = "sharedPosts".id
   WHERE relations.follower = $2 OR shares."userId" = $2
   GROUP BY "sharedPosts".id, shares."shareTime", shares."userId", 
   metadatas.title, metadatas.image, metadatas.description, metadatas.url,
@@ -58,8 +58,7 @@ async function getPosts(page, userId) {
   ORDER BY "postTime" DESC
   OFFSET 10*($1-1)
   LIMIT 10;
-  `;
-
+  ;`;
   return connection.query(queryString, queryParams);
 }
 
